@@ -1,0 +1,451 @@
+nguyenth@vsi:~$ picocom -b 115200 /dev/ttyUSB5
+picocom v3.1
+
+port is        : /dev/ttyUSB5
+flowcontrol    : none
+baudrate is    : 115200
+parity is      : none
+databits are   : 8
+stopbits are   : 1
+escape is      : C-a
+local echo is  : no
+noinit is      : no
+noreset is     : no
+hangup is      : no
+nolock is      : no
+send_cmd is    : sz -vv
+receive_cmd is : rz -vv -E
+imap is        :
+omap is        :
+emap is        : crcrlf,delbs,
+logfile is     : none
+initstring     : none
+exit_after is  : not set
+exit is        : no
+
+Type [C-a] [C-h] to see available commands
+Terminal ready
+
+U-Boot SPL 2026.01 (Sep 10 2026 - 17:41:15 +0700)
+  ==========================
+   VIETTEL BOOTLOADER START
+  ==========================
+SPL: PL DDR initialization successful
+Trying to boot from VIETTEL DDR FIT loader
+SPL: trying FIT images from DDR
+SPL: main FIT: os=27 load=0x80000000 entry=0x80000000 fdt=? flags=0x80272b08
+SPL: publish OpenSBI: os=27 entry=0x80000000 fdt=?
+
+OpenSBI v1.7
+   ____                    _____ ____ _____
+  / __ \                  / ____|  _ \_   _|
+ | |  | |_ __   ___ _ __ | (___ | |_) || |
+ | |  | | '_ \ / _ \ '_ \ \___ \|  _ < | |
+ | |__| | |_) |  __/ | | |____) | |_) || |_
+  \____/| .__/ \___|_| |_|_____/|____/_____|
+        | |
+        |_|
+
+Platform Name               : ucb-bar,chipyard
+Platform Features           : medeleg
+Platform HART Count         : 1
+Platform IPI Device         : aclint-mswi
+Platform Timer Device       : aclint-mtimer @ 100000Hz
+Platform Console Device     : sifive_uart
+Platform HSM Device         : ---
+Platform PMU Device         : ---
+Platform Reboot Device      : htif
+Platform Shutdown Device    : htif
+Platform Suspend Device     : ---
+Platform CPPC Device        : ---
+Firmware Base               : 0x80000000
+Firmware Size               : 317 KB
+Firmware RW Offset          : 0x40000
+Firmware RW Size            : 61 KB
+Firmware Heap Offset        : 0x46000
+Firmware Heap Size          : 37 KB (total), 2 KB (reserved), 11 KB (used), 23 KB (free)
+Firmware Scratch Size       : 4096 B (total), 400 B (used), 3696 B (free)
+Runtime SBI Version         : 3.0
+Standard SBI Extensions     : time,rfnc,ipi,base,hsm,srst,pmu,dbcn,fwft,legacy,dbtr,sse
+Experimental SBI Extensions : none
+
+Domain0 Name                : root
+Domain0 Boot HART           : 0
+Domain0 HARTs               : 0*
+Domain0 Region00            : 0x0000000002000000-0x000000000200ffff M: (I,R,W) S/U: ()
+Domain0 Region01            : 0x0000000080040000-0x000000008004ffff M: (R,W) S/U: ()
+Domain0 Region02            : 0x0000000080000000-0x000000008003ffff M: (R,X) S/U: ()
+Domain0 Region03            : 0x000000000c000000-0x000000000fffffff M: (I,R,W) S/U: (R,W)
+Domain0 Region04            : 0x0000000000000000-0xffffffffffffffff M: () S/U: (R,W,X)
+Domain0 Next Address        : 0x0000000080200000
+Domain0 Next Arg1           : 0x0000000080272b08
+Domain0 Next Mode           : S-mode
+Domain0 SysReset            : yes
+Domain0 SysSuspend          : yes
+
+Boot HART ID                : 0
+Boot HART Domain            : root
+Boot HART Priv Version      : v1.12
+Boot HART Base ISA          : rv64imafdcx
+Boot HART ISA Extensions    : zihpm,sdtrig
+Boot HART PMP Count         : 8
+Boot HART PMP Granularity   : 2 bits
+Boot HART PMP Address Bits  : 30
+Boot HART MHPM Info         : 0 (0x00000000)
+Boot HART Debug Triggers    : 1 triggers
+Boot HART MIDELEG           : 0x0000000000000222
+Boot HART MEDELEG           : 0x000000000000b109
+
+
+U-Boot 2026.01 (Sep 10 2026 - 17:41:15 +0700)
+
+CPU:   openhwgroup,cva6
+DRAM:  1 GiB
+Core:  16 devices, 8 uclasses, devicetree: separate
+MMC:
+Loading Environment from nowhere... OK
+In:    serial@10020000
+Out:   serial@10020000
+Err:   serial@10020000
+Net:   No ethernet found.
+Hit any key to stop autoboot: 0
+No MMC device available
+** Bad device specification mmc 0 **
+Couldn't find partition mmc 0:2
+Can't set block device
+## Loading kernel (any) from FIT Image at 90000000 ...
+   Using 'standard' configuration
+   Trying 'kernel-1' kernel subimage
+     Description:  Linux Kernel
+     Type:         Kernel Image
+     Compression:  gzip compressed
+     Data Start:   0x900000bc
+     Data Size:    3281290 Bytes = 3.1 MiB
+     Architecture: RISC-V
+     OS:           Linux
+     Load Address: 0x82800000
+     Entry Point:  0x82800000
+     Hash algo:    sha256
+     Hash value:   24fec27b23c43722707ff8bd6df911db6e1fc96cbd28d47f85ec957cc3a1f480
+   Verifying Hash Integrity ... sha256+ OK
+## Loading ramdisk (any) from FIT Image at 90000000 ...
+   Using 'standard' configuration
+   Trying 'ramdisk-1' ramdisk subimage
+     Description:  Initial ramdisk
+     Type:         RAMDisk Image
+     Compression:  uncompressed
+     Data Start:   0x90323c04
+     Data Size:    9829876 Bytes = 9.4 MiB
+     Architecture: RISC-V
+     OS:           Linux
+     Load Address: unavailable
+     Entry Point:  unavailable
+     Hash algo:    sha256
+     Hash value:   055adbaa19ec7455df3f118192d34df15e520f0c7102cca6c79b5087be6769b4
+   Verifying Hash Integrity ... sha256+ OK
+## Loading fdt (any) from FIT Image at 90000000 ...
+   Using 'standard' configuration
+   Trying 'fdt-1' fdt subimage
+     Description:  DTB
+     Type:         Flat Device Tree
+     Compression:  uncompressed
+     Data Start:   0x90321334
+     Data Size:    10245 Bytes = 10 KiB
+     Architecture: RISC-V
+     Hash algo:    sha256
+     Hash value:   dd292e7875fb4d63055a760ac17458057f302b67dbeea210c8b45698e985bc22
+   Verifying Hash Integrity ... sha256+ OK
+   Booting using the fdt blob at 0x90321334
+Working FDT set to 90321334
+   Uncompressing Kernel Image to 82800000
+   Loading Ramdisk to bddfc000, end be75bdf4 ... OK
+   Loading Device Tree to 00000000bddf6000, end 00000000bddfb804 ... OK
+Working FDT set to bddf6000
+
+Starting kernel ...
+
+[    0.000000] Linux version 6.19.6 (nguyenth@vsi.es) (riscv64-buildroot-linux-gnu-gcc.br_real (Buildroot 2026.02) 14.3.0, GNU ld (GNU Binutils) 2.44) #1 Fri Sep 11 17:34:35 +07 2026
+[    0.000000] Machine model: ucb-bar,chipyard
+[    0.000000] SBI specification v3.0 detected
+[    0.000000] SBI implementation ID=0x1 Version=0x10007
+[    0.000000] SBI TIME extension detected
+[    0.000000] SBI IPI extension detected
+[    0.000000] SBI RFENCE extension detected
+[    0.000000] SBI SRST extension detected
+[    0.000000] SBI DBCN extension detected
+[    0.000000] SBI FWFT extension detected
+[    0.000000] earlycon: sifive0 at MMIO 0x0000000010020000 (options '')
+[    0.000000] printk: legacy bootconsole [sifive0] enabled
+[    0.000000] efi: UEFI not found.
+[    0.000000] OF: reserved mem: 0x0000000080040000..0x000000008004ffff (64 KiB) nomap non-reusable mmode_resv0@80040000
+[    0.000000] OF: reserved mem: 0x0000000080000000..0x000000008003ffff (256 KiB) nomap non-reusable mmode_resv1@80000000
+[    0.000000] Zone ranges:
+[    0.000000]   DMA32    [mem 0x0000000080000000-0x00000000bfffffff]
+[    0.000000]   Normal   empty
+[    0.000000] Movable zone start for each node
+[    0.000000] Early memory node ranges
+[    0.000000]   node   0: [mem 0x0000000080000000-0x000000008004ffff]
+[    0.000000]   node   0: [mem 0x0000000080050000-0x00000000bfffffff]
+[    0.000000] Initmem setup node 0 [mem 0x0000000080000000-0x00000000bfffffff]
+[    0.000000] Falling back to deprecated "riscv,isa"
+[    0.000000] riscv: base ISA extensions acdfim
+[    0.000000] riscv: ELF capabilities acdfim
+[    0.000000] Ticket spinlock: enabled
+[    0.000000] Kernel command line: earlycon console=ttySIF0,115200
+[    0.000000] printk: log buffer data + meta data: 131072 + 458752 = 589824 bytes
+[    0.000000] Dentry cache hash table entries: 131072 (order: 8, 1048576 bytes, linear)
+[    0.000000] Inode-cache hash table entries: 65536 (order: 7, 524288 bytes, linear)
+[    0.000000] Built 1 zonelists, mobility grouping on.  Total pages: 262144
+[    0.000000] mem auto-init: stack:all(zero), heap alloc:off, heap free:off
+[    0.000000] SLUB: HWalign=64, Order=0-3, MinObjects=0, CPUs=1, Nodes=1
+[    0.000000] NR_IRQS: 64, nr_irqs: 64, preallocated irqs: 0
+[    0.000000] riscv-intc: 64 local interrupts mapped
+[    0.000000] clocksource: riscv_clocksource: mask: 0xffffffffffffffff max_cycles: 0x179dd7f66, max_idle_ns: 28210892933900 ns
+[    0.000030] sched_clock: 64 bits at 100kHz, resolution 10000ns, wraps every 35184372085000ns
+[    0.009890] Console: colour dummy device 80x25
+[    0.013990] Calibrating delay loop (skipped), value calculated using timer frequency.. 0.20 BogoMIPS (lpj=1000)
+[    0.023940] pid_max: default: 32768 minimum: 301
+[    0.030460] Mount-cache hash table entries: 2048 (order: 2, 16384 bytes, linear)
+[    0.037640] Mountpoint-cache hash table entries: 2048 (order: 2, 16384 bytes, linear)
+[    0.063320] riscv: ELF compat mode unsupported
+[    0.063460] ASID allocator disabled (0 bits)
+[    0.073660] EFI services will not be available.
+[    0.078480] Memory: 1003716K/1048576K available (3911K kernel code, 4707K rwdata, 2048K rodata, 2147K init, 271K bss, 42272K reserved, 0K cma-reserved)
+[    0.095170] devtmpfs: initialized
+[    0.118210] clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 19112604462750000 ns
+[    0.127860] posixtimers hash table entries: 512 (order: 0, 4096 bytes, linear)
+[    0.134950] futex hash table entries: 256 (8192 bytes on 1 NUMA nodes, total 8 KiB, linear).
+[    0.144270] DMI not present or invalid.
+[    0.156310] NET: Registered PF_NETLINK/PF_ROUTE protocol family
+[    0.163060] DMA: preallocated 128 KiB GFP_KERNEL|GFP_DMA32 pool for atomic allocations
+[    0.172880] SBI misaligned access exception delegation ok
+[    0.214220] pps_core: LinuxPPS API ver. 1 registered
+[    0.218580] pps_core: Software ver. 5.3.6 - Copyright 2005-2007 Rodolfo Giometti <giometti@linux.it>
+[    0.228040] PTP clock support registered
+[    0.238920] clocksource: Switched to clocksource riscv_clocksource
+[    0.344280] NET: Registered PF_INET protocol family
+[    0.352530] IP idents hash table entries: 16384 (order: 5, 131072 bytes, linear)
+[    0.385150] tcp_listen_portaddr_hash hash table entries: 512 (order: 0, 4096 bytes, linear)
+[    0.393280] Table-perturb hash table entries: 65536 (order: 6, 262144 bytes, linear)
+[    0.400830] TCP established hash table entries: 8192 (order: 4, 65536 bytes, linear)
+[    0.410560] TCP bind hash table entries: 8192 (order: 5, 131072 bytes, linear)
+[    0.420390] TCP: Hash tables configured (established 8192 bind 8192)
+[    0.428570] UDP hash table entries: 512 (order: 3, 32768 bytes, linear)
+[    0.435520] UDP-Lite hash table entries: 512 (order: 3, 32768 bytes, linear)
+[    0.444370] NET: Registered PF_UNIX/PF_LOCAL protocol family
+[    0.459260] Unpacking initramfs...
+[    0.484020] workingset: timestamp_bits=62 max_order=18 bucket_order=0
+[    0.491670] io scheduler mq-deadline registered
+[    0.495580] io scheduler kyber registered
+[    0.524850] riscv-plic: interrupt-controller@c000000: Invalid cpuid for context 3
+[    0.532580] riscv-plic: interrupt-controller@c000000: mapped 8 interrupts with 1 handlers for 4 contexts.
+[    1.828680] Serial: 8250/16550 driver, 4 ports, IRQ sharing disabled
+[    1.879320] 10020000.serial: ttySIF0 at MMIO 0x10020000 (irq = 1, base_baud = 6250000) is a SiFive UART v0
+[    1.888670] printk: console [ttySIF0] enabled
+[    1.888670] printk: console [ttySIF0] enabled
+[    1.897130] printk: legacy bootconsole [sifive0] disabled
+[    1.897130] printk: legacy bootconsole [sifive0] disabled
+[    1.957120] NET: Registered PF_INET6 protocol family
+[    1.995610] Segment Routing with IPv6
+[    1.996470] In-situ OAM (IOAM) with IPv6
+[    1.997320] sit: IPv6, IPv4 and MPLS over IPv4 tunneling driver
+[    2.003640] NET: Registered PF_PACKET protocol family
+[    2.164030] clk: Disabling unused clocks
+[    7.712070] Freeing initrd memory: 9596K
+[    7.753970] Freeing unused kernel image (initmem) memory: 2144K
+[    7.754300] Run /init as init process
+[    7.773960] init[1]: unhandled signal 4 code 0x1 at 0x0000003fa83da2d4 in ld-linux-riscv64-lp64d.so.1[112d4,3fa83c9000+21000]
+[    7.774270] CPU: 0 UID: 0 PID: 1 Comm: init Not tainted 6.19.6 #1 NONE
+[    7.774400] Hardware name: ucb-bar,chipyard (DT)
+[    7.774450] epc : 0000003fa83da2d4 ra : 0000003fa83d9aa2 sp : 0000003fd5dcac40
+[    7.774540]  gp : 0000000000000000 tp : 0000000000000000 t0 : 0000000000000000
+[    7.774610]  t1 : 000000000000003f t2 : 0000000000000000 s0 : 0000003fd5dcad20
+[    7.774680]  s1 : 0000000000000000 a0 : 0000000000000000 a1 : 0000000000000000
+[    7.774750]  a2 : 0000003fa83c9bc0 a3 : 0000000000000012 a4 : 0000003fa83eabc8
+[    7.774830]  a5 : 0000003fa83e4f68 a6 : 0000003fd5dcac70 a7 : 0000000000000000
+[    7.774910]  s2 : 0000003fa83c9d58 s3 : 0000003fa83c9000 s4 : 0000000000000000
+[    7.774980]  s5 : 0000000000000005 s6 : 0000003fa83c9000 s7 : 0000003fa83ecc40
+[    7.775060]  s8 : 0000003fa83c9d70 s9 : 0000003fa83c9458 s10: 000000000000fff1
+[    7.775130]  s11: 000000000000000a t3 : 00000000000000a8 t4 : 00000000003fa83e
+[    7.775210]  t5 : 000000003fa83e4f t6 : 0000000000000000
+[    7.775270] status: 8000000200006020 badaddr: 0000000000008b1c cause: 0000000000000002
+[    7.775450] Code: d893 0287 d513 0307 d593 0387 3423 f4f4 00a3 01e7 (8b1c) 0123
+[    7.775790] Kernel panic - not syncing: Attempted to kill init! exitcode=0x00000004
+[    7.898090] CPU: 0 UID: 0 PID: 1 Comm: init Not tainted 6.19.6 #1 NONE
+[    7.904680] Hardware name: ucb-bar,chipyard (DT)
+[    7.909290] Call Trace:
+[    7.911720] [<ffffffff80010994>] dump_backtrace+0x1c/0x24
+[    7.917110] [<ffffffff800022c0>] show_stack+0x28/0x34
+[    7.922150] [<ffffffff8000a9ae>] dump_stack_lvl+0x32/0x4c
+[    7.927540] [<ffffffff8000a9dc>] dump_stack+0x14/0x1e
+[    7.932580] [<ffffffff800027ec>] vpanic+0xdc/0x250
+[    7.937360] [<ffffffff80002992>] panic+0x32/0x34
+[    7.941960] [<ffffffff8001c0a8>] do_exit+0x2d0/0x2d8
+[    7.946920] [<ffffffff8001c1bc>] do_group_exit+0x1c/0x50
+[    7.952220] [<ffffffff800271aa>] get_signal+0x48a/0x4a8
+[    7.957430] [<ffffffff8000e838>] arch_do_signal_or_restart+0x54/0x1bc
+[    7.963870] [<ffffffff8006d9f4>] exit_to_user_mode_loop+0x54/0x6c4
+[    7.970040] [<ffffffff803cd142>] do_trap_insn_illegal+0xea/0x110
+[    7.976040] [<ffffffff803d3c66>] handle_exception+0x142/0x14e
+[    7.981820] ---[ end Kernel panic - not syncing: Attempted to kill init! exitcode=0x00000004 ]---
+
+
+
+Starting kernel ...
+
+[    0.000000] Linux version 6.19.6 (nguyenth@vsi.es) (riscv64-buildroot-linux-gnu-gcc.br_real (Buildroot 2026.02-dirty) 14.3.0, GNU ld (GNU Binutils) 2.44) #1 Fri Sep 11 19:45:45 +07 2026
+[    0.000000] Machine model: ucb-bar,chipyard
+[    0.000000] SBI specification v3.0 detected
+[    0.000000] SBI implementation ID=0x1 Version=0x10007
+[    0.000000] SBI TIME extension detected
+[    0.000000] SBI IPI extension detected
+[    0.000000] SBI RFENCE extension detected
+[    0.000000] SBI SRST extension detected
+[    0.000000] SBI DBCN extension detected
+[    0.000000] SBI FWFT extension detected
+[    0.000000] earlycon: sifive0 at MMIO 0x0000000010020000 (options '')
+[    0.000000] printk: legacy bootconsole [sifive0] enabled
+[    0.000000] efi: UEFI not found.
+[    0.000000] OF: reserved mem: 0x0000000080040000..0x000000008004ffff (64 KiB) nomap non-reusable mmode_resv0@80040000
+[    0.000000] OF: reserved mem: 0x0000000080000000..0x000000008003ffff (256 KiB) nomap non-reusable mmode_resv1@80000000
+[    0.000000] Zone ranges:
+[    0.000000]   DMA32    [mem 0x0000000080000000-0x00000000bfffffff]
+[    0.000000]   Normal   empty
+[    0.000000] Movable zone start for each node
+[    0.000000] Early memory node ranges
+[    0.000000]   node   0: [mem 0x0000000080000000-0x000000008004ffff]
+[    0.000000]   node   0: [mem 0x0000000080050000-0x00000000bfffffff]
+[    0.000000] Initmem setup node 0 [mem 0x0000000080000000-0x00000000bfffffff]
+[    0.000000] Falling back to deprecated "riscv,isa"
+[    0.000000] riscv: base ISA extensions acdfim
+[    0.000000] riscv: ELF capabilities acdfim
+[    0.000000] Ticket spinlock: enabled
+[    0.000000] Kernel command line: earlycon console=ttySIF0,115200
+[    0.000000] printk: log buffer data + meta data: 131072 + 458752 = 589824 bytes
+[    0.000000] Dentry cache hash table entries: 131072 (order: 8, 1048576 bytes, linear)
+[    0.000000] Inode-cache hash table entries: 65536 (order: 7, 524288 bytes, linear)
+[    0.000000] Built 1 zonelists, mobility grouping on.  Total pages: 262144
+[    0.000000] mem auto-init: stack:all(zero), heap alloc:off, heap free:off
+[    0.000000] SLUB: HWalign=64, Order=0-3, MinObjects=0, CPUs=1, Nodes=1
+[    0.000000] NR_IRQS: 64, nr_irqs: 64, preallocated irqs: 0
+[    0.000000] riscv-intc: 64 local interrupts mapped
+[    0.000000] clocksource: riscv_clocksource: mask: 0xffffffffffffffff max_cycles: 0x179dd7f66, max_idle_ns: 28210892933900 ns
+[    0.000020] sched_clock: 64 bits at 100kHz, resolution 10000ns, wraps every 35184372085000ns
+[    0.009890] Console: colour dummy device 80x25
+[    0.014000] Calibrating delay loop (skipped), value calculated using timer frequency.. 0.20 BogoMIPS (lpj=1000)
+[    0.023950] pid_max: default: 32768 minimum: 301
+[    0.030460] Mount-cache hash table entries: 2048 (order: 2, 16384 bytes, linear)
+[    0.037630] Mountpoint-cache hash table entries: 2048 (order: 2, 16384 bytes, linear)
+[    0.063370] riscv: ELF compat mode unsupported
+[    0.063520] ASID allocator disabled (0 bits)
+[    0.073720] EFI services will not be available.
+[    0.078550] Memory: 1003712K/1048576K available (3911K kernel code, 4707K rwdata, 2048K rodata, 2147K init, 271K bss, 42276K reserved, 0K cma-reserved)
+[    0.095260] devtmpfs: initialized
+[    0.118280] clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 19112604462750000 ns
+[    0.127940] posixtimers hash table entries: 512 (order: 0, 4096 bytes, linear)
+[    0.135030] futex hash table entries: 256 (8192 bytes on 1 NUMA nodes, total 8 KiB, linear).
+[    0.144360] DMI not present or invalid.
+[    0.156400] NET: Registered PF_NETLINK/PF_ROUTE protocol family
+[    0.163170] DMA: preallocated 128 KiB GFP_KERNEL|GFP_DMA32 pool for atomic allocations
+[    0.172960] SBI misaligned access exception delegation ok
+[    0.214280] pps_core: LinuxPPS API ver. 1 registered
+[    0.218630] pps_core: Software ver. 5.3.6 - Copyright 2005-2007 Rodolfo Giometti <giometti@linux.it>
+[    0.228090] PTP clock support registered
+[    0.238990] clocksource: Switched to clocksource riscv_clocksource
+[    0.344370] NET: Registered PF_INET protocol family
+[    0.352610] IP idents hash table entries: 16384 (order: 5, 131072 bytes, linear)
+[    0.385250] tcp_listen_portaddr_hash hash table entries: 512 (order: 0, 4096 bytes, linear)
+[    0.393380] Table-perturb hash table entries: 65536 (order: 6, 262144 bytes, linear)
+[    0.400950] TCP established hash table entries: 8192 (order: 4, 65536 bytes, linear)
+[    0.410660] TCP bind hash table entries: 8192 (order: 5, 131072 bytes, linear)
+[    0.420500] TCP: Hash tables configured (established 8192 bind 8192)
+[    0.428680] UDP hash table entries: 512 (order: 3, 32768 bytes, linear)
+[    0.435650] UDP-Lite hash table entries: 512 (order: 3, 32768 bytes, linear)
+[    0.444480] NET: Registered PF_UNIX/PF_LOCAL protocol family
+[    0.459420] Unpacking initramfs...
+[    0.484160] workingset: timestamp_bits=62 max_order=18 bucket_order=0
+[    0.491810] io scheduler mq-deadline registered
+[    0.495720] io scheduler kyber registered
+[    0.525060] riscv-plic: interrupt-controller@c000000: Invalid cpuid for context 3
+[    0.532780] riscv-plic: interrupt-controller@c000000: mapped 8 interrupts with 1 handlers for 4 contexts.
+[    1.831940] Serial: 8250/16550 driver, 4 ports, IRQ sharing disabled
+[    1.883330] 10020000.serial: ttySIF0 at MMIO 0x10020000 (irq = 1, base_baud = 6250000) is a SiFive UART v0
+[    1.892840] printk: console [ttySIF0] enabled
+[    1.892840] printk: console [ttySIF0] enabled
+[    1.901250] printk: legacy bootconsole [sifive0] disabled
+[    1.901250] printk: legacy bootconsole [sifive0] disabled
+[    1.961030] NET: Registered PF_INET6 protocol family
+[    1.998770] Segment Routing with IPv6
+[    1.999910] In-situ OAM (IOAM) with IPv6
+[    2.000770] sit: IPv6, IPv4 and MPLS over IPv4 tunneling driver
+[    2.006750] NET: Registered PF_PACKET protocol family
+[    2.168050] clk: Disabling unused clocks
+[    7.727970] Freeing initrd memory: 9600K
+[    7.773710] Freeing unused kernel image (initmem) memory: 2144K
+[    7.774040] Run /init as init process
+[    9.177010] ip[63]: unhandled signal 4 code 0x1 at 0x0000002ae9fe17fa in ip[f7fa,2ae9fd2000+8f000]
+[    9.177380] CPU: 0 UID: 0 PID: 63 Comm: ip Not tainted 6.19.6 #1 NONE
+[    9.177510] Hardware name: ucb-bar,chipyard (DT)
+[    9.177560] epc : 0000002ae9fe17fa ra : 0000002ae9fe17cc sp : 0000003ff5471390
+[    9.177640]  gp : 0000002aea06ac84 tp : 0000003fbe6eb440 t0 : 0000003ff5471110
+[    9.177720]  t1 : 0000003ff5471f60 t2 : 0000000000000003 s0 : 0000003ff5471f64
+[    9.177800]  s1 : 0000000000000006 a0 : 0000000000000000 a1 : 2f2f2f2f2f2f2f2f
+[    9.177870]  a2 : 0000000000000020 a3 : ffffffff00000000 a4 : 0000003ff5471f60
+[    9.177950]  a5 : 0000000000000001 a6 : 0000002aea04e390 a7 : 0000003ff5471f61
+[    9.178030]  s2 : 0000003ff5471588 s3 : 000000000000002d s4 : 0000000000000001
+[    9.178110]  s5 : 0000002aea06a48c s6 : 0000003ff5471f61 s7 : 0000003fbe714cd0
+[    9.178190]  s8 : 0000000000000000 s9 : 0000000000000002 s10: 0000000000000014
+[    9.178260]  s11: 0000002ab43be528 t3 : 0000003fbe60c1c4 t4 : ffffffffffffffff
+[    9.178340]  t5 : 0000000000fc830f t6 : 000000000151d440
+[    9.178400] status: 8000000200006020 badaddr: 000000000000801c cause: 0000000000000002
+[    9.178590] Code: 0993 02d0 9a97 0008 8a93 ca2a 4c89 4a05 3403 0089 (801c) 879b
+[    9.347460] ip[64]: unhandled signal 4 code 0x1 at 0x0000002ae71cf7fa in ip[f7fa,2ae71c0000+8f000]
+[    9.347820] CPU: 0 UID: 0 PID: 64 Comm: ip Not tainted 6.19.6 #1 NONE
+[    9.347950] Hardware name: ucb-bar,chipyard (DT)
+[    9.348000] epc : 0000002ae71cf7fa ra : 0000002ae71cf7cc sp : 0000003fd15650e0
+[    9.348080]  gp : 0000002ae7258c84 tp : 0000003fa79a8440 t0 : 0000003fd1564e60
+[    9.348160]  t1 : 0000003fd1565f68 t2 : 0000000000000003 s0 : 0000003fd1565f71
+[    9.348240]  s1 : 0000000000000005 a0 : 0000000000000000 a1 : 5f462f2f2f2f2f2f
+[    9.348320]  a2 : ffffffff80808080 a3 : 0000003fd1565f68 a4 : 8080808080808080
+[    9.348400]  a5 : 0000000000000001 a6 : 0000003fd1565f68 a7 : 0000003fd1565f6e
+[    9.348480]  s2 : 0000003fd15652d8 s3 : 000000000000002d s4 : 0000000000000001
+[    9.348550]  s5 : 0000002ae725848c s6 : 0000003fd1565f6e s7 : 0000003fa79d1cd0
+[    9.348630]  s8 : 0000000000000000 s9 : 0000000000000002 s10: 0000000000000014
+[    9.348700]  s11: 0000002ace59e7e0 t3 : 0000003fa78c91c4 t4 : ffffffffffffffff
+[    9.348780]  t5 : 0000000000fcc577 t6 : 000000000151d440
+[    9.348850] status: 8000000200006020 badaddr: 000000000000801c cause: 0000000000000002
+[    9.349360] Code: 0993 02d0 9a97 0008 8a93 ca2a 4c89 4a05 3403 0089 (801c) 879b
+[   25.535970] ssh-keygen[89]: unhandled signal 4 code 0x1 at 0x0000003f85db6bce in libcrypto.so.3[1adbce,3f85c09000+3c7000]
+[   25.536340] CPU: 0 UID: 0 PID: 89 Comm: ssh-keygen Not tainted 6.19.6 #1 NONE
+[   25.536470] Hardware name: ucb-bar,chipyard (DT)
+[   25.536530] epc : 0000003f85db6bce ra : 0000003f85db65fc sp : 0000003fff31e8c0
+[   25.536610]  gp : 0000002ae5a778b0 tp : 0000003f85a92b60 t0 : 0000003fff31eea0
+[   25.536690]  t1 : 0000003f85cf610c t2 : 0000000000000006 s0 : 0000003f85ec3680
+[   25.536770]  s1 : 0000000000000045 a0 : 0000000000000010 a1 : 0000000000000000
+[   25.536840]  a2 : 0000003f85ec3680 a3 : 0000000000000045 a4 : 0000000000000008
+[   25.536910]  a5 : 0000002ae5a79428 a6 : 0000002ae5a79400 a7 : 0000002ae5a793c0
+[   25.536990]  s2 : 0000003f85dd7334 s3 : 0000000000000002 s4 : 0000003fff31ea80
+[   25.537070]  s5 : 0000003f86048df0 s6 : 0000002ae5a75648 s7 : 0000003f86153cd8
+[   25.537150]  s8 : 0000003f86154008 s9 : 0000000000000000 s10: ffffffffffffffff
+[   25.537230]  s11: 0000003fff31ed18 t3 : 0000003f85b13f3c t4 : 0000000000000000
+[   25.537310]  t5 : 0000003f85fe53c8 t6 : 000000000151d440
+[   25.537370] status: 8000000200006020 badaddr: 0000000000009d59 cause: 0000000000000002
+[   25.537560] Code: 8082 872e 35b3 02b5 1101 e822 e426 ec06 8432 84b6 (9d59) e989
+[   25.792370] sshd[90]: unhandled signal 4 code 0x1 at 0x0000002ad57b32ca in sshd[2b2ca,2ad5788000+72000]
+[   25.792750] CPU: 0 UID: 0 PID: 90 Comm: sshd Not tainted 6.19.6 #1 NONE
+[   25.792880] Hardware name: ucb-bar,chipyard (DT)
+[   25.792930] epc : 0000002ad57b32ca ra : 0000002ad57b3298 sp : 0000003fcb278ba0
+[   25.793010]  gp : 0000002ad57fd9d8 tp : 0000003fb1a06fe0 t0 : 0000003fcb279380
+[   25.793090]  t1 : 0000002ad579124c t2 : 0000000000000007 s0 : 0000000000000000
+[   25.793170]  s1 : 0000000000000020 a0 : 0000002ad57ff660 a1 : 0000000000000000
+[   25.793240]  a2 : 0000000000000000 a3 : 0000002ad57ff760 a4 : 000000000000000d
+[   25.793320]  a5 : 0000002ad57ff350 a6 : 0000002ad57ff760 a7 : 0000002ad57ff660
+[   25.793400]  s2 : 0000002ad57ff610 s3 : 0000002ad57ff330 s4 : 0000000000000000
+[   25.793470]  s5 : 0000000000000009 s6 : fbffffffffffffde s7 : 000000000000003a
+[   25.793550]  s8 : 0000000000000000 s9 : 0000002ad57ff330 s10: 0000002ad57ff4b0
+[   25.793630]  s11: 000000000000002f t3 : 0000003fb1ac8bd8 t4 : 0000003fb1a069a8
+[   25.793700]  t5 : 000000000115df3f t6 : 000000000151d440
+[   25.793770] status: 8000000200006020 badaddr: 0000000000009f61 cause: 0000000000000002
+[   25.793950] Code: 0200 0b93 03a0 4aa5 8a63 0e9d f663 0fb4 871b fded (9f61) ed63
+
+

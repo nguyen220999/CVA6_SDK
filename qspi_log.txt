@@ -1,0 +1,132 @@
+nguyenth@vsi:~$ picocom -b 115200 /dev/ttyUSB2
+picocom v3.1
+
+port is        : /dev/ttyUSB2
+flowcontrol    : none
+baudrate is    : 115200
+parity is      : none
+databits are   : 8
+stopbits are   : 1
+escape is      : C-a
+local echo is  : no
+noinit is      : no
+noreset is     : no
+hangup is      : no
+nolock is      : no
+send_cmd is    : sz -vv
+receive_cmd is : rz -vv -E
+imap is        :
+omap is        :
+emap is        : crcrlf,delbs,
+logfile is     : none
+initstring     : none
+exit_after is  : not set
+exit is        : no
+
+Type [C-a] [C-h] to see available commands
+Terminal ready
+
+U-Boot SPL 2026.01 (Sep 03 2026 - 19:08:16 +0700)
+SPL: SPI RXDATA empty, value=0x80000000
+SPL: SPI MMIO[0x10030000] SCKDIV = 0x00000018
+SPL: SPI MMIO[0x10030004] SCKMODE = 0x00000000
+SPL: SPI MMIO[0x10030010] CSID = 0x00000000
+SPL: SPI MMIO[0x10030014] CSDEF = 0x00000001
+SPL: SPI MMIO[0x10030018] CSMODE = 0x00000003
+SPL: SPI MMIO[0x10030040] FMT = 0x00080000
+SPL: SPI MMIO[0x10030060] FCTRL = 0x00000000
+SPL: SPI MMIO[0x10030070] IE = 0x00000000
+SPL: SPI JEDEC ID: ef 40 17
+SPL: SPI initialization successful
+Trying to boot from VIETTEL QSPI FIT loader
+SPL: trying FIT images from QSPI
+SPL: SPI FIT header at 0x300000: magic=0xd00dfeed totalsize=0xb8799
+SPL: SPI flash read: offset=0x300000 size=0xb879c
+SPL: load u-boot.itb from QSPI SUCCESSFUL
+SPL: QSPI main FIT: os=27 load=0x80200000 entry=0x80200000 fdt=? flags=0x80472b08
+SPL: QSPI NPU firmware loaded at 0x0, entry 0x0, size 0x0
+SPL: invalid NPU entry 0x0 for image at 0x0, size 0x0
+SPL: cannot handoff to NPU, error: -22
+
+OpenSBI v1.7
+   ____                    _____ ____ _____
+  / __ \                  / ____|  _ \_   _|
+ | |  | |_ __   ___ _ __ | (___ | |_) || |
+ | |  | | '_ \ / _ \ '_ \ \___ \|  _ < | |
+ | |__| | |_) |  __/ | | |____) | |_) || |_
+  \____/| .__/ \___|_| |_|_____/|____/_____|
+        | |
+        |_|
+
+Platform Name               : ucb-bar,chipyard
+Platform Features           : medeleg
+Platform HART Count         : 1
+Platform IPI Device         : aclint-mswi
+Platform Timer Device       : aclint-mtimer @ 100000Hz
+Platform Console Device     : sifive_uart
+Platform HSM Device         : ---
+Platform PMU Device         : ---
+Platform Reboot Device      : htif
+Platform Shutdown Device    : htif
+Platform Suspend Device     : ---
+Platform CPPC Device        : ---
+Firmware Base               : 0x80200000
+Firmware Size               : 317 KB
+Firmware RW Offset          : 0x40000
+Firmware RW Size            : 61 KB
+Firmware Heap Offset        : 0x46000
+Firmware Heap Size          : 37 KB (total), 2 KB (reserved), 11 KB (used), 23 KB (free)
+Firmware Scratch Size       : 4096 B (total), 400 B (used), 3696 B (free)
+Runtime SBI Version         : 3.0
+Standard SBI Extensions     : time,rfnc,ipi,base,hsm,srst,pmu,dbcn,fwft,legacy,dbtr,sse
+Experimental SBI Extensions : none
+
+Domain0 Name                : root
+Domain0 Boot HART           : 0
+Domain0 HARTs               : 0*
+Domain0 Region00            : 0x0000000002000000-0x000000000200ffff M: (I,R,W) S/U: ()
+Domain0 Region01            : 0x0000000080240000-0x000000008024ffff M: (R,W) S/U: ()
+Domain0 Region02            : 0x0000000080200000-0x000000008023ffff M: (R,X) S/U: ()
+Domain0 Region03            : 0x000000000c000000-0x000000000fffffff M: (I,R,W) S/U: (R,W)
+Domain0 Region04            : 0x0000000000000000-0xffffffffffffffff M: () S/U: (R,W,X)
+Domain0 Next Address        : 0x0000000080400000
+Domain0 Next Arg1           : 0x0000000080472b08
+Domain0 Next Mode           : S-mode
+Domain0 SysReset            : yes
+Domain0 SysSuspend          : yes
+
+Boot HART ID                : 0
+Boot HART Domain            : root
+Boot HART Priv Version      : v1.12
+Boot HART Base ISA          : rv64imafdcx
+Boot HART ISA Extensions    : zihpm,sdtrig
+Boot HART PMP Count         : 8
+Boot HART PMP Granularity   : 2 bits
+Boot HART PMP Address Bits  : 30
+Boot HART MHPM Info         : 0 (0x00000000)
+Boot HART Debug Triggers    : 1 triggers
+Boot HART MIDELEG           : 0x0000000000000222
+Boot HART MEDELEG           : 0x000000000000b109
+
+
+U-Boot 2026.01 (Aug 14 2026 - 12:35:26 +0700)
+
+CPU:   openhwgroup,cva6
+DRAM:
+
+
+
+
+> load_image /data/workspaces/nguyenth/_repo/cva6-sdk/buildroot/output/build/uboot-custom/spl/u-boot-spl-dtb.bin 0x08000000
+53035 bytes written at address 0x08000000
+downloaded 53035 bytes in 0.222552s (232.719 KiB/s)
+
+> reg pc 0x08000000
+pc (/64): 0x0000000008000000
+
+> resume
+> halt
+> reg pc
+pc (/64): 0x0000000080207a04
+
+>

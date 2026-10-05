@@ -1,0 +1,59 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Tran Hoang Nguyen <nguyenth@viettel.com.vn>
+Date: Tue, 15 Sep 2026 20:30:00 +0700
+Subject: [PATCH] riscv: dts: cva6: use single-hart interrupt contexts
+
+The FPGA image exposes only hart 0, but the selected Chipyard device tree
+describes hart 1 and its CLINT and PLIC contexts as active. Linux therefore
+tries to parse interrupt contexts for a CPU that is not available and reports
+an invalid cpuid.
+
+Disable hart 1 and remove its interrupt-controller references. Keep both the
+machine-mode and supervisor-mode contexts for hart 0 so OpenSBI and Linux use
+the context indices implemented by the single-hart design.
+
+Signed-off-by: Tran Hoang Nguyen <nguyenth@viettel.com.vn>
+---
+ ...yardharnessViettelDualSSV2DDR2GBFPGAConfig.dts | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/dts/upstream/src/riscv/viettel/chipyardharnessViettelDualSSV2DDR2GBFPGAConfig.dts b/dts/upstream/src/riscv/viettel/chipyardharnessViettelDualSSV2DDR2GBFPGAConfig.dts
+--- a/dts/upstream/src/riscv/viettel/chipyardharnessViettelDualSSV2DDR2GBFPGAConfig.dts
++++ b/dts/upstream/src/riscv/viettel/chipyardharnessViettelDualSSV2DDR2GBFPGAConfig.dts
+@@ -62,6 +62,6 @@
+ 			reg = <0x1>;
+ 			riscv,isa = "rv64imafdczicsr_zifencei_zihpm";
+-			status = "okay";
++			status = "disabled";
+ 			timebase-frequency = <100000>;
+ 			tlb-split;
+ 			L13: interrupt-controller {
+@@ -113,7 +113,7 @@
+ 		};
+ 		L15: clint@2000000 {
+ 			compatible = "riscv,clint0";
+-			interrupts-extended = <&L11 3 &L11 7 &L13 3 &L13 7>;
++			interrupts-extended = <&L11 3 &L11 7>;
+ 			reg = <0x2000000 0x10000>;
+ 			reg-names = "control";
+ 		};
+@@ -124,7 +124,7 @@
+ 		L17: debug-controller@0 {
+ 			compatible = "sifive,debug-013", "riscv,debug-013";
+ 			debug-attach = "jtag";
+-			interrupts-extended = <&L11 65535 &L13 65535>;
++			interrupts-extended = <&L11 65535>;
+ 			reg = <0x0 0x1000>;
+ 			reg-names = "control";
+ 		};
+@@ -162,7 +162,7 @@
+ 			#interrupt-cells = <1>;
+ 			compatible = "riscv,plic0";
+ 			interrupt-controller;
+-			interrupts-extended = <&L11 11 &L11 9 &L13 11 &L13 9>;
++			interrupts-extended = <&L11 11 &L11 9>;
+ 			reg = <0xc000000 0x4000000>;
+ 			reg-names = "control";
+ 			riscv,max-priority = <7>;
+-- 
+2.39.5

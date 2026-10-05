@@ -1,0 +1,97 @@
+nguyenth@vsi:~$ picocom -b 115200 /dev/ttyUSB2
+picocom v3.1
+
+port is        : /dev/ttyUSB2
+flowcontrol    : none
+baudrate is    : 115200
+parity is      : none
+databits are   : 8
+stopbits are   : 1
+escape is      : C-a
+local echo is  : no
+noinit is      : no
+noreset is     : no
+hangup is      : no
+nolock is      : no
+send_cmd is    : sz -vv
+receive_cmd is : rz -vv -E
+imap is        :
+omap is        :
+emap is        : crcrlf,delbs,
+logfile is     : none
+initstring     : none
+exit_after is  : not set
+exit is        : no
+
+Type [C-a] [C-h] to see available commands
+Terminal ready
+
+U-Boot SPL 2026.01 (Jul 31 2026 - 16:57:51 +0700)
+Trying to boot from RAM
+
+OpenSBI v1.7
+   ____                    _____ ____ _____
+  / __ \                  / ____|  _ \_   _|
+ | |  | |_ __   ___ _ __ | (___ | |_) || |
+ | |  | | '_ \ / _ \ '_ \ \___ \|  _ < | |
+ | |__| | |_) |  __/ | | |____) | |_) || |_
+  \____/| .__/ \___|_| |_|_____/|____/_____|
+        | |
+        |_|
+
+Platform Name               : ucb-bar,chipyard
+Platform Features           : medeleg
+Platform HART Count         : 2
+Platform IPI Device         : aclint-mswi
+Platform Timer Device       : aclint-mtimer @ 100000Hz
+Platform Console Device     : sifive_uart
+Platform HSM Device         : ---
+Platform PMU Device         : ---
+Platform Reboot Device      : htif
+Platform Shutdown Device    : htif
+Platform Suspend Device     : ---
+Platform CPPC Device        : ---
+Firmware Base               : 0x80200000
+Firmware Size               : 329 KB
+Firmware RW Offset          : 0x40000
+Firmware RW Size            : 73 KB
+Firmware Heap Offset        : 0x48000
+Firmware Heap Size          : 41 KB (total), 2 KB (reserved), 11 KB (used), 27 KB (free)
+Firmware Scratch Size       : 4096 B (total), 400 B (used), 3696 B (free)
+Runtime SBI Version         : 3.0
+Standard SBI Extensions     : time,rfnc,ipi,base,hsm,srst,pmu,dbcn,fwft,legacy,sse
+Experimental SBI Extensions : none
+
+Domain0 Name                : root
+Domain0 Boot HART           : 0
+Domain0 HARTs               : 0*,1*
+Domain0 Region00            : 0x0000000002000000-0x000000000200ffff M: (I,R,W) S/U: ()
+Domain0 Region01            : 0x0000000080240000-0x000000008025ffff M: (R,W) S/U: ()
+Domain0 Region02            : 0x0000000080200000-0x000000008023ffff M: (R,X) S/U: ()
+Domain0 Region03            : 0x000000000c000000-0x000000000fffffff M: (I,R,W) S/U: (R,W)
+Domain0 Region04            : 0x0000000000000000-0xffffffffffffffff M: () S/U: (R,W,X)
+Domain0 Next Address        : 0x0000000080400000
+Domain0 Next Arg1           : 0x0000000080472af8
+Domain0 Next Mode           : S-mode
+Domain0 SysReset            : yes
+Domain0 SysSuspend          : yes
+
+Boot HART ID                : 0
+Boot HART Domain            : root
+Boot HART Priv Version      : v1.12
+Boot HART Base ISA          : rv64imafdcb
+Boot HART ISA Extensions    : zihpm,sdtrig
+Boot HART PMP Count         : 8
+Boot HART PMP Granularity   : 3 bits
+Boot HART PMP Address Bits  : 54
+Boot HART MHPM Info         : 6 (0x000001f8)
+Boot HART Debug Triggers    : 0 triggers
+Boot HART MIDELEG           : 0x0000000000000222
+Boot HART MEDELEG           : 0x000000000000b109
+
+
+U-Boot 2026.01 (Jul 31 2026 - 16:57:51 +0700)
+
+CPU:   openhwgroup,cva6
+DRAM:  2 GiB
+

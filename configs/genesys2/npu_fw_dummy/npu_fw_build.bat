@@ -1,0 +1,1 @@
+make -C configs/genesys2/npu_fw_dummy fit

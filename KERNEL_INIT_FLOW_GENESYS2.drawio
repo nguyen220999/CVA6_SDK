@@ -1,0 +1,138 @@
+<mxfile host="app.diagrams.net" modified="2026-09-14T00:00:00.000Z" agent="Codex" version="24.7.17" type="device">
+  <diagram id="kernel-init-genesys2" name="Kernel init flow">
+    <mxGraphModel dx="1434" dy="827" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="2339" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="title" value="&lt;b&gt;GENESYS2 — LUỒNG KHỞI TẠO LINUX TỪ U-BOOT HANDOFF&lt;/b&gt;&lt;br&gt;RV64 / Linux 6.19.6 / U-Boot S-mode + OpenSBI M-mode" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1F4E78;strokeColor=#163A5C;fontColor=#FFFFFF;fontSize=20;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="20" y="20" width="1500" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="context" value="&lt;b&gt;Image FIT: standard&lt;/b&gt; | Image.gz → &lt;b&gt;0x8280_0000&lt;/b&gt; | DTB + rootfs.cpio.gz do LMB chọn địa chỉ runtime&lt;br&gt;U-Boot gọi kernel trên boot hart; DTB build hiện có CPU0 + CPU1 nhưng Linux đang &lt;b&gt;# CONFIG_SMP is not set&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EAF2F8;strokeColor=#5B9BD5;fontSize=13;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="20" y="115" width="1500" height="70" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="opensbi_lane" value="&lt;b&gt;OpenSBI (M-mode)&lt;/b&gt;&lt;br&gt;&lt;br&gt;Đã được SPL nạp trước U-Boot.&lt;br&gt;&lt;br&gt;Vẫn resident trong RAM khi U-Boot và Linux chạy S-mode.&lt;br&gt;&lt;br&gt;Không phải stage nạp lại kernel.&lt;br&gt;&lt;br&gt;Linux gọi SBI bằng ECALL cho các dịch vụ machine-mode: timer, reset, IPI/HSM…" style="swimlane;startSize=45;horizontal=0;rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF2CC;swimlaneFillColor=#FFF9E6;strokeColor=#D6B656;fontSize=13;align=center;verticalAlign=top;spacingTop=15;" vertex="1" parent="1">
+          <mxGeometry x="20" y="205" width="220" height="1940" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="phase1" value="1  U-BOOT: CHUẨN BỊ HANDOFF" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2F75B5;strokeColor=#1F4E78;fontColor=#FFFFFF;fontSize=15;fontStyle=1;align=left;spacingLeft=12;" vertex="1" parent="1">
+          <mxGeometry x="270" y="205" width="1250" height="42" as="geometry"/>
+        </mxCell>
+        <mxCell id="uboot_cmd" value="&lt;b&gt;CONFIG_BOOTCOMMAND&lt;/b&gt;&lt;br&gt;mmc info; fatload mmc 0:2; bootm&lt;br&gt;&lt;br&gt;fatload đặt fitImage.itb tại ${loadaddr} (mặc định 0x9000_0000)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D9EAF7;strokeColor=#2F75B5;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="300" y="270" width="330" height="115" as="geometry"/>
+        </mxCell>
+        <mxCell id="fit_parse" value="&lt;b&gt;bootm parse FIT “standard”&lt;/b&gt;&lt;br&gt;• kernel-1: Image.gz, SHA-256&lt;br&gt;• fdt-1: u-boot.dtb&lt;br&gt;• ramdisk-1: rootfs.cpio.gz" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D9EAF7;strokeColor=#2F75B5;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="690" y="270" width="330" height="115" as="geometry"/>
+        </mxCell>
+        <mxCell id="fit_load" value="&lt;b&gt;LOADOS + RAMDISK + FDT&lt;/b&gt;&lt;br&gt;Giải nén kernel → 0x8280_0000&lt;br&gt;LMB reserve/relocate initramfs và DTB&lt;br&gt;Kiểm tra không chồng vùng nhớ" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D9EAF7;strokeColor=#2F75B5;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1080" y="270" width="390" height="115" as="geometry"/>
+        </mxCell>
+        <mxCell id="prep" value="&lt;b&gt;OS_PREP: image_setup_linux()&lt;/b&gt;&lt;br&gt;image_setup_libfdt() cập nhật DTB runtime:&lt;br&gt;• /chosen/linux,initrd-start + linux,initrd-end&lt;br&gt;• /chosen/bootargs nếu U-Boot env “bootargs” tồn tại&lt;br&gt;• memory reservations / board fixups" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E2F0D9;strokeColor=#70AD47;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="510" y="425" width="500" height="135" as="geometry"/>
+        </mxCell>
+        <mxCell id="cleanup" value="&lt;b&gt;OS_GO: boot_jump_linux()&lt;/b&gt;&lt;br&gt;board_quiesce_devices() → dm_remove_devices_active()&lt;br&gt;→ cleanup_before_linux() → “Starting kernel ...”" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E2F0D9;strokeColor=#70AD47;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1080" y="425" width="390" height="135" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="phase2" value="2  ABI HANDOFF U-BOOT → LINUX" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C55A11;strokeColor=#843C0C;fontColor=#FFFFFF;fontSize=15;fontStyle=1;align=left;spacingLeft=12;" vertex="1" parent="1">
+          <mxGeometry x="270" y="600" width="1250" height="42" as="geometry"/>
+        </mxCell>
+        <mxCell id="handoff" value="&lt;b&gt;kernel(gd-&amp;gt;arch.boot_hart, images-&amp;gt;ft_addr)&lt;/b&gt;&lt;br&gt;&lt;br&gt;PC = 0x8280_0000 (_start)&lt;br&gt;a0 = hart ID của boot CPU&lt;br&gt;a1 = địa chỉ vật lý của DTB runtime&lt;br&gt;privilege = S-mode; MMU tắt theo Linux boot ABI" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FCE4D6;strokeColor=#C55A11;strokeWidth=3;fontSize=14;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry x="540" y="675" width="700" height="150" as="geometry"/>
+        </mxCell>
+        <mxCell id="sbi_note" value="Các ECALL từ S-mode&lt;br&gt;được trap sang OpenSBI M-mode&lt;br&gt;rồi quay lại Linux" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF2CC;strokeColor=#D6B656;dashed=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="270" y="700" width="220" height="95" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="phase3" value="3  RISC-V EARLY ENTRY: head.S (MMU OFF → ON)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#7030A0;strokeColor=#4C216B;fontColor=#FFFFFF;fontSize=15;fontStyle=1;align=left;spacingLeft=12;" vertex="1" parent="1">
+          <mxGeometry x="270" y="865" width="1250" height="42" as="geometry"/>
+        </mxCell>
+        <mxCell id="start" value="&lt;b&gt;_start → _start_kernel&lt;/b&gt;&lt;br&gt;Mask S-mode interrupts&lt;br&gt;Enable time CSR access&lt;br&gt;Load gp; disable FPU/vector state" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E4DFEC;strokeColor=#7030A0;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="300" y="940" width="300" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="bss" value="&lt;b&gt;Thiết lập môi trường C sớm&lt;/b&gt;&lt;br&gt;Clear BSS&lt;br&gt;Lưu boot_cpu_hartid = a0&lt;br&gt;tp = init_task; sp = init stack&lt;br&gt;DTB physical address lấy từ a1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E4DFEC;strokeColor=#7030A0;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="650" y="940" width="330" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="mmu" value="&lt;b&gt;setup_vm(dtb_pa)&lt;/b&gt;&lt;br&gt;Tạo early page tables / chọn SATP mode&lt;br&gt;relocate_enable_mmu(): trampoline_pg_dir&lt;br&gt;→ swapper/early_pg_dir → SATP Sv39&lt;br&gt;Cài trap vector" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E4DFEC;strokeColor=#7030A0;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1030" y="940" width="390" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="start_kernel_jump" value="soc_early_init() → &lt;b&gt;start_kernel()&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5A6E6;strokeColor=#7030A0;strokeWidth=2;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="690" y="1100" width="360" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="phase4" value="4  GENERIC KERNEL INIT: start_kernel()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#548235;strokeColor=#385723;fontColor=#FFFFFF;fontSize=15;fontStyle=1;align=left;spacingLeft=12;" vertex="1" parent="1">
+          <mxGeometry x="270" y="1200" width="1250" height="42" as="geometry"/>
+        </mxCell>
+        <mxCell id="early_generic" value="&lt;b&gt;Boot CPU + kiến trúc&lt;/b&gt;&lt;br&gt;smp_setup_processor_id(); IRQ off&lt;br&gt;boot_cpu_init(); in Linux banner&lt;br&gt;&lt;b&gt;setup_arch(&amp;amp;command_line)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E2F0D9;strokeColor=#548235;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="300" y="1280" width="300" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="setup_arch" value="&lt;b&gt;setup_arch() — RISC-V&lt;/b&gt;&lt;br&gt;parse_dtb() + memblock&lt;br&gt;sbi_init(); paging_init()&lt;br&gt;unflatten_device_tree()&lt;br&gt;init resources, ISA/hwcap, alternatives&lt;br&gt;(CONFIG_SMP=n: không online CPU1)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E2F0D9;strokeColor=#548235;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="650" y="1280" width="350" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="cmdline_decision" value="DTB runtime có&lt;br&gt;/chosen/bootargs?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFF2CC;strokeColor=#BF9000;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1080" y="1265" width="190" height="145" as="geometry"/>
+        </mxCell>
+        <mxCell id="cmdline_uboot" value="Dùng bootargs từ U-Boot&lt;br&gt;(CONFIG_CMDLINE không override)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D9EAF7;strokeColor=#2F75B5;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1310" y="1260" width="190" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="cmdline_config" value="Dùng fallback:&lt;br&gt;&lt;b&gt;earlycon console=ttySIF0,115200&lt;/b&gt;&lt;br&gt;CONFIG_CMDLINE_FALLBACK=y" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE699;strokeColor=#BF9000;strokeWidth=2;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1310" y="1350" width="190" height="85" as="geometry"/>
+        </mxCell>
+        <mxCell id="core_subsys" value="&lt;b&gt;Khởi tạo core subsystem&lt;/b&gt;&lt;br&gt;setup_command_line() + parse args&lt;br&gt;MM/page allocator + slab + VFS caches&lt;br&gt;scheduler + workqueue(early) + RCU&lt;br&gt;PLIC/IRQ, tick/timer/timekeeping&lt;br&gt;local_irq_enable() → console_init()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E2F0D9;strokeColor=#548235;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="510" y="1475" width="500" height="135" as="geometry"/>
+        </mxCell>
+        <mxCell id="rest_init" value="&lt;b&gt;rest_init()&lt;/b&gt;&lt;br&gt;Tạo PID 1: kernel_init&lt;br&gt;Tạo PID 2: kthreadd&lt;br&gt;Boot CPU đi vào cpu_startup_entry() / idle loop" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C6E0B4;strokeColor=#548235;strokeWidth=2;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1080" y="1475" width="390" height="135" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="phase5" value="5  PID 1: INITCALLS → INITRAMFS → USER SPACE" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#A64D79;strokeColor=#783F5F;fontColor=#FFFFFF;fontSize=15;fontStyle=1;align=left;spacingLeft=12;" vertex="1" parent="1">
+          <mxGeometry x="270" y="1650" width="1250" height="42" as="geometry"/>
+        </mxCell>
+        <mxCell id="kernel_init_freeable" value="&lt;b&gt;kernel_init_freeable()&lt;/b&gt;&lt;br&gt;wait kthreadd → workqueue_init()&lt;br&gt;do_pre_smp_initcalls(); smp_init() (no-op do SMP=n)&lt;br&gt;&lt;b&gt;do_basic_setup() → do_initcalls()&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F4CCCC;strokeColor=#A64D79;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="300" y="1730" width="360" height="125" as="geometry"/>
+        </mxCell>
+        <mxCell id="initcalls" value="&lt;b&gt;Các mức initcall&lt;/b&gt;&lt;br&gt;pure → core → postcore → arch → subsys&lt;br&gt;→ fs → rootfs → device → late&lt;br&gt;&lt;br&gt;Probe driver built-in: SBI/PLIC, SiFive UART,&lt;br&gt;Xilinx SPI, mmc-spi, GPIO, LowRISC Ethernet…" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F4CCCC;strokeColor=#A64D79;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="710" y="1730" width="390" height="125" as="geometry"/>
+        </mxCell>
+        <mxCell id="initramfs" value="&lt;b&gt;rootfs_initcall(populate_rootfs)&lt;/b&gt;&lt;br&gt;Giải nén external rootfs.cpio.gz vào rootfs&lt;br&gt;wait_for_initramfs(); console_on_rootfs()&lt;br&gt;free_initmem(); mark_readonly()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F4CCCC;strokeColor=#A64D79;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1150" y="1730" width="330" height="125" as="geometry"/>
+        </mxCell>
+        <mxCell id="run_init" value="&lt;b&gt;run_init_process(“/init”)&lt;/b&gt;&lt;br&gt;Nếu thất bại: thử /sbin/init → /etc/init → /bin/init → /bin/sh&lt;br&gt;Không có init hợp lệ → panic “No working init found”" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FCE4D6;strokeColor=#C55A11;strokeWidth=2;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="570" y="1905" width="620" height="105" as="geometry"/>
+        </mxCell>
+        <mxCell id="userspace" value="&lt;b&gt;/init của Buildroot&lt;/b&gt;&lt;br&gt;mount -t devtmpfs devtmpfs /dev&lt;br&gt;redirect stdin/stdout/stderr → /dev/console&lt;br&gt;exec /sbin/init → đọc /etc/inittab&lt;br&gt;→ rcS/services/getty trên ttySIF0 → user space sẵn sàng" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DDEBF7;strokeColor=#5B9BD5;strokeWidth=3;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="510" y="2050" width="740" height="120" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="source" value="&lt;b&gt;Nguồn đối chiếu trong workspace:&lt;/b&gt; configs/genesys2/{linux64_defconfig,uboot64_defconfig,buildroot64_defconfig}; fitImage.its; U-Boot arch/riscv/lib/bootm.c + boot/image-board.c + boot/fdt_support.c; Linux arch/riscv/kernel/{head.S,setup.c} + init/main.c + init/initramfs.c.&#xa;&lt;b&gt;Lưu ý CONFIG_CMDLINE:&lt;/b&gt; DTB build hiện chỉ có /chosen/stdout-path, không có bootargs. Nếu env U-Boot cũng không có bootargs thì fallback trong kernel là chuỗi ở linux64_defconfig. Nếu env có bootargs thì chuỗi đó thắng." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F2F2F2;strokeColor=#7F7F7F;fontSize=11;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=10;" vertex="1" parent="1">
+          <mxGeometry x="20" y="2200" width="1500" height="100" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#2F75B5;" edge="1" parent="1" source="uboot_cmd" target="fit_parse"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#2F75B5;" edge="1" parent="1" source="fit_parse" target="fit_load"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#70AD47;" edge="1" parent="1" source="fit_load" target="prep"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#70AD47;" edge="1" parent="1" source="prep" target="cleanup"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=3;strokeColor=#C55A11;" edge="1" parent="1" source="cleanup" target="handoff"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=3;strokeColor=#7030A0;" edge="1" parent="1" source="handoff" target="start"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#7030A0;" edge="1" parent="1" source="start" target="bss"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#7030A0;" edge="1" parent="1" source="bss" target="mmu"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#7030A0;" edge="1" parent="1" source="mmu" target="start_kernel_jump"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=3;strokeColor=#548235;" edge="1" parent="1" source="start_kernel_jump" target="early_generic"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#548235;" edge="1" parent="1" source="early_generic" target="setup_arch"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#BF9000;" edge="1" parent="1" source="setup_arch" target="cmdline_decision"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e13" value="Có" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#2F75B5;fontSize=11;" edge="1" parent="1" source="cmdline_decision" target="cmdline_uboot"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e14" value="Không" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#BF9000;fontSize=11;" edge="1" parent="1" source="cmdline_decision" target="cmdline_config"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e15" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#548235;" edge="1" parent="1" source="setup_arch" target="core_subsys"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e16" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#548235;" edge="1" parent="1" source="core_subsys" target="rest_init"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=3;strokeColor=#A64D79;" edge="1" parent="1" source="rest_init" target="kernel_init_freeable"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e18" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#A64D79;" edge="1" parent="1" source="kernel_init_freeable" target="initcalls"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e19" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#A64D79;" edge="1" parent="1" source="initcalls" target="initramfs"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e20" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#C55A11;" edge="1" parent="1" source="initramfs" target="run_init"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e21" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=3;strokeColor=#5B9BD5;" edge="1" parent="1" source="run_init" target="userspace"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e_sbi" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=open;endFill=0;startArrow=open;startFill=0;dashed=1;strokeColor=#D6B656;" edge="1" parent="1" source="sbi_note" target="opensbi_lane"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

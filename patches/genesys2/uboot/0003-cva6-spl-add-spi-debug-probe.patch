@@ -1,0 +1,157 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Tran Hoang Nguyen <nguyenth@viettel.com.vn>
+Date: Thu, 27 Aug 2026 20:22:00 +0700
+Subject: [PATCH] cva6: spl: add SPI flash debug probe
+
+Print the controller configuration, JEDEC ID, status register, and raw
+bytes at the start of flash and at the configured U-Boot FIT offset.
+Keep the debug probe non-fatal so the normal SPL loader still runs and
+reports its original error after the diagnostic output.
+
+Signed-off-by: Tran Hoang Nguyen <nguyenth@viettel.com.vn>
+---
+ board/openhwgroup/cva6_genesysII/spl_spi.c | 100 ++++++++++++++++++++++
+ 1 file changed, 100 insertions(+)
+
+diff --git a/board/openhwgroup/cva6_genesysII/spl_spi.c b/board/openhwgroup/cva6_genesysII/spl_spi.c
+--- a/board/openhwgroup/cva6_genesysII/spl_spi.c
++++ b/board/openhwgroup/cva6_genesysII/spl_spi.c
+@@ -29,7 +29,9 @@
+ #define CVA6_SPI_TXDATA		0x48
+ #define CVA6_SPI_RXDATA		0x4c
+ #define CVA6_SPI_FCTRL			0x60
++#define CVA6_SPI_FFMT			0x64
+ #define CVA6_SPI_IE			0x70
++#define CVA6_SPI_IP			0x74
+ 
+ #define CVA6_SPI_CSMODE_HOLD		2
+ #define CVA6_SPI_CSMODE_OFF		3
+@@ -39,15 +41,20 @@
+ 
+ #define CVA6_SPI_SCKDIV_VALUE		24
+ #define CVA6_SPI_READ_CMD		0x03
++#define CVA6_SPI_READ_STATUS_CMD	0x05
++#define CVA6_SPI_READ_JEDEC_ID_CMD	0x9f
+ #define CVA6_SPI_ADDRESS_BYTES		3
+ #define CVA6_SPI_FLASH_SIZE		0x00800000UL
+ #define CVA6_SPI_POLL_LIMIT		1000000UL
++#define CVA6_SPI_DEBUG_DUMP_SIZE	16
+ 
+ struct cva6_spi_fit {
+ 	u32 offset;
+ 	ulong max_size;
+ };
+ 
++static void cva6_spi_debug_probe(void);
++
+ static void __iomem *cva6_spi_reg(ulong offset)
+ {
+ 	return (void __iomem *)(CVA6_SPI_CTRL_BASE + offset);
+@@ -105,6 +112,7 @@ int cva6_spl_spi_init(void)
+ 		if (rxdata & CVA6_SPI_RXDATA_EMPTY) {
+ 			/* Complete controller setup before the first transaction. */
+ 			mb();
++			cva6_spi_debug_probe();
+ 			return 0;
+ 		}
+ 	}
+@@ -168,6 +176,97 @@ out:
+ 	return ret;
+ }
+ 
++static int cva6_spi_read_command(u8 command, u8 *buf, size_t size)
++{
++	int ret;
++
++	if (!buf || !size)
++		return -EINVAL;
++
++	writel(0, cva6_spi_reg(CVA6_SPI_FCTRL));
++	writel(CVA6_SPI_FMT_RX_SINGLE_8BIT, cva6_spi_reg(CVA6_SPI_FMT));
++	writel(CVA6_SPI_CSMODE_HOLD, cva6_spi_reg(CVA6_SPI_CSMODE));
++
++	/* Discard the byte received while transmitting the command. */
++	ret = cva6_spi_transfer(command, NULL);
++	if (ret)
++		goto out;
++
++	while (size--) {
++		ret = cva6_spi_transfer(0xff, buf++);
++		if (ret)
++			goto out;
++	}
++
++out:
++	writel(CVA6_SPI_CSMODE_OFF, cva6_spi_reg(CVA6_SPI_CSMODE));
++	return ret;
++}
++
++static void cva6_spi_print_bytes(const char *name, u32 offset,
++				 const u8 *buf, size_t size)
++{
++	size_t index;
++
++	printf("SPL: SPI debug %s @0x%08x:", name, offset);
++	for (index = 0; index < size; index++)
++		printf(" %02x", buf[index]);
++	putc('\n');
++}
++
++static void cva6_spi_debug_probe(void)
++{
++	u8 data[CVA6_SPI_DEBUG_DUMP_SIZE] = {};
++	u8 jedec_id[3] = {};
++	u8 status = 0;
++	int ret;
++
++	printf("SPL: SPI regs: sckdiv=%08x sckmode=%08x csid=%08x "
++	       "csdef=%08x csmode=%08x fmt=%08x fctrl=%08x "
++	       "ffmt=%08x ip=%08x\n",
++	       readl(cva6_spi_reg(CVA6_SPI_SCKDIV)),
++	       readl(cva6_spi_reg(CVA6_SPI_SCKMODE)),
++	       readl(cva6_spi_reg(CVA6_SPI_CSID)),
++	       readl(cva6_spi_reg(CVA6_SPI_CSDEF)),
++	       readl(cva6_spi_reg(CVA6_SPI_CSMODE)),
++	       readl(cva6_spi_reg(CVA6_SPI_FMT)),
++	       readl(cva6_spi_reg(CVA6_SPI_FCTRL)),
++	       readl(cva6_spi_reg(CVA6_SPI_FFMT)),
++	       readl(cva6_spi_reg(CVA6_SPI_IP)));
++
++	ret = cva6_spi_read_command(CVA6_SPI_READ_JEDEC_ID_CMD,
++				    jedec_id, sizeof(jedec_id));
++	if (ret)
++		printf("SPL: SPI JEDEC ID read failed: %d\n", ret);
++	else
++		printf("SPL: SPI JEDEC ID: %02x %02x %02x\n",
++		       jedec_id[0], jedec_id[1], jedec_id[2]);
++
++	ret = cva6_spi_read_command(CVA6_SPI_READ_STATUS_CMD,
++				    &status, sizeof(status));
++	if (ret)
++		printf("SPL: SPI status read failed: %d\n", ret);
++	else
++		printf("SPL: SPI status: %02x\n", status);
++
++	ret = cva6_spl_spi_read(0, data, sizeof(data));
++	if (ret)
++		printf("SPL: SPI debug read @0 failed: %d\n", ret);
++	else
++		cva6_spi_print_bytes("raw", 0, data, sizeof(data));
++
++	ret = cva6_spl_spi_read(CONFIG_CVA6_SPL_QSPI_UBOOT_FIT_OFFSET,
++				data, sizeof(data));
++	if (ret) {
++		printf("SPL: SPI debug read @0x%x failed: %d\n",
++		       CONFIG_CVA6_SPL_QSPI_UBOOT_FIT_OFFSET, ret);
++	} else {
++		cva6_spi_print_bytes("raw",
++				      CONFIG_CVA6_SPL_QSPI_UBOOT_FIT_OFFSET,
++				      data, sizeof(data));
++	}
++}
++
+ static ulong cva6_spl_spi_fit_read(struct spl_load_info *load,
+ 				   ulong offset, ulong size, void *buf)
+ {
+-- 
+2.39.5

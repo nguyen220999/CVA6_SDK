@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2026-08-17T00:00:00.000Z" agent="Codex" version="24.7.17" type="device">
+  <diagram id="r5-startup-main" name="1 - R5 Startup">
+    <mxGraphModel dx="2000" dy="2600" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2000" pageHeight="2600" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="title" value="&lt;b&gt;CORTEX-R5 STARTUP ASSEMBLY FLOW — ZYNQMP FSBL&lt;/b&gt;" style="text;html=1;align=center;verticalAlign=middle;fontSize=24;fontColor=#1F2937;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="300" y="20" width="1400" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="subtitle" value="Luồng thực tế của BSP standalone Cortex-R5: asm_vectors.S → boot.S → xil-crt0.S → xfsbl_main.c" style="text;html=1;align=center;verticalAlign=middle;fontSize=13;fontColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="380" y="70" width="1240" height="30" as="geometry"/>
+        </mxCell>
+
+        <!-- Phase backgrounds -->
+        <mxCell id="p_vector" value="&lt;b&gt;1. RESET VECTOR&lt;/b&gt;" style="swimlane;html=1;startSize=38;rounded=1;arcSize=8;fillColor=#E5E7EB;strokeColor=#4B5563;fontColor=#374151;fontSize=15;swimlaneFillColor=#FAFAFA;" vertex="1" parent="1">
+          <mxGeometry x="380" y="130" width="800" height="270" as="geometry"/>
+        </mxCell>
+        <mxCell id="p_boot" value="&lt;b&gt;2. boot.S — PROCESSOR MINIMUM INITIALIZATION&lt;/b&gt;" style="swimlane;html=1;startSize=38;rounded=1;arcSize=8;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontColor=#1F4E79;fontSize=15;swimlaneFillColor=#F5F9FE;" vertex="1" parent="1">
+          <mxGeometry x="250" y="430" width="1060" height="1320" as="geometry"/>
+        </mxCell>
+        <mxCell id="p_crt" value="&lt;b&gt;3. xil-crt0.S — C RUNTIME STARTUP&lt;/b&gt;" style="swimlane;html=1;startSize=38;rounded=1;arcSize=8;fillColor=#D5E8D4;strokeColor=#82B366;fontColor=#2E6B32;fontSize=15;swimlaneFillColor=#F5FAF4;" vertex="1" parent="1">
+          <mxGeometry x="380" y="1780" width="800" height="710" as="geometry"/>
+        </mxCell>
+        <mxCell id="notes_bg" value="&lt;b&gt;CONTEXT / REGISTER EFFECTS&lt;/b&gt;" style="swimlane;html=1;startSize=38;rounded=1;arcSize=8;fillColor=#FFF2CC;strokeColor=#D6B656;fontColor=#7A4E00;fontSize=14;swimlaneFillColor=#FFFDF5;" vertex="1" parent="1">
+          <mxGeometry x="1350" y="130" width="590" height="2360" as="geometry"/>
+        </mxCell>
+
+        <!-- Reset vector -->
+        <mxCell id="reset" value="R5 reset / BootROM handoff" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E5E7EB;strokeColor=#4B5563;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="450" y="205" width="240" height="65" as="geometry"/>
+        </mxCell>
+        <mxCell id="vector" value="&lt;b&gt;_vector_table&lt;/b&gt;&lt;br&gt;ldr pc, =_boot" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#4B5563;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="820" y="195" width="270" height="85" as="geometry"/>
+        </mxCell>
+        <mxCell id="linker" value="Linker script&lt;br&gt;&lt;b&gt;ENTRY(_vector_table)&lt;/b&gt;&lt;br&gt;.vectors được KEEP ở đầu image" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#FFF2CC;strokeColor=#D6B656;fontSize=12;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="1400" y="200" width="470" height="110" as="geometry"/>
+        </mxCell>
+
+        <!-- boot.S -->
+        <mxCell id="boot" value="&lt;b&gt;_prestart / _boot / OKToRun&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="615" y="485" width="330" height="65" as="geometry"/>
+        </mxCell>
+        <mxCell id="zero_gpr" value="Zero general registers&lt;br&gt;&lt;b&gt;mov r0…r12, #0&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#6C8EBF;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="625" y="585" width="310" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="banked_stack" value="&lt;b&gt;Khởi tạo banked SP/LR&lt;/b&gt;&lt;br&gt;IRQ (0x12) → __irq_stack&lt;br&gt;SVC (0x13) → __supervisor_stack&lt;br&gt;ABT (0x17) → __abort_stack&lt;br&gt;FIQ (0x11) → __fiq_stack&lt;br&gt;UND (0x1B) → __undef_stack&lt;br&gt;SYS (0x1F) → __stack" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#6C8EBF;fontSize=12;align=left;spacingLeft=14;" vertex="1" parent="1">
+          <mxGeometry x="525" y="690" width="510" height="175" as="geometry"/>
+        </mxCell>
+        <mxCell id="fpu" value="Enable VFP&lt;br&gt;CPACR.CP10/CP11 = full access&lt;br&gt;FPEXC.EN = 1&lt;br&gt;Zero d0…d15" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#6C8EBF;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="590" y="905" width="380" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="disable" value="&lt;b&gt;Disable MPU + caches&lt;/b&gt;&lt;br&gt;SCTLR.M = 0, C = 0, I = 0&lt;br&gt;DSB → MCR → ISB" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8CECC;strokeColor=#B85450;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="590" y="1045" width="380" height="95" as="geometry"/>
+        </mxCell>
+        <mxCell id="actlr" value="Cấu hình ACTLR khi cache/MPU đang tắt&lt;br&gt;• Tắt branch predictor + return stack tạm thời&lt;br&gt;• Enable ATCM/B0TCM/B1TCM ECC check&lt;br&gt;• Abort khi parity error&lt;br&gt;• Invalidate toàn bộ I-cache + D-cache" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#6C8EBF;fontSize=12;align=left;spacingLeft=14;" vertex="1" parent="1">
+          <mxGeometry x="505" y="1180" width="550" height="125" as="geometry"/>
+        </mxCell>
+        <mxCell id="lockstep_check" value="Lockstep &amp;&amp;&lt;br&gt;non-JTAG &amp;&amp;&lt;br&gt;LOCKSTEP_MODE_DEBUG=0?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFF2CC;strokeColor=#D6B656;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="410" y="1350" width="260" height="130" as="geometry"/>
+        </mxCell>
+        <mxCell id="fault_log" value="Reset R5 debug logic&lt;br&gt;RPU_ERR_INJ |= 0x101&lt;br&gt;&lt;b&gt;Enable lockstep fault log&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="760" y="1370" width="280" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="init_mpu" value="&lt;b&gt;bl Init_MPU&lt;/b&gt;&lt;br&gt;Disable old MPU regions&lt;br&gt;Program TCM/DDR/PL/QSPI/device regions" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="600" y="1515" width="360" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="enable" value="Enable branch predictor + return stack&lt;br&gt;ACTLR.DBWR = 1 (errata 780125)&lt;br&gt;&lt;b&gt;SCTLR.M/C/I = 1 → MPU + D/I cache ON&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82B366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="565" y="1640" width="430" height="90" as="geometry"/>
+        </mxCell>
+
+        <!-- boot side branch: vector location and abort -->
+        <mxCell id="vec_mode" value="VEC_TABLE_IN_OCM?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFF2CC;strokeColor=#D6B656;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1375" y="1390" width="250" height="115" as="geometry"/>
+        </mxCell>
+        <mxCell id="lovec" value="Không define:&lt;br&gt;Clear SCTLR.V&lt;br&gt;Clear RPU_0_CFG.VINITHI&lt;br&gt;&lt;b&gt;Vector tại LOVEC / TCM 0x0&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1660" y="1395" width="250" height="105" as="geometry"/>
+        </mxCell>
+        <mxCell id="ocmvec" value="Có define:&lt;br&gt;Giữ vector mapping theo OCM" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#666666;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1450" y="1560" width="240" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="async_abort" value="Enable asynchronous abort&lt;br&gt;&lt;b&gt;CPSR.A = 0&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#D6B656;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1570" y="1680" width="260" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- CRT0 -->
+        <mxCell id="startup" value="&lt;b&gt;b _startup&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82B366;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="650" y="1835" width="260" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="cpu_init" value="&lt;b&gt;bl __cpu_init&lt;/b&gt;&lt;br&gt;BSP CPU initialization" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#82B366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="620" y="1925" width="320" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="warm" value="Warm reset?&lt;br&gt;RPU_PWRCTL bit 0 = 1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFF2CC;strokeColor=#D6B656;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="450" y="2030" width="240" height="115" as="geometry"/>
+        </mxCell>
+        <mxCell id="clear_bss" value="Cold boot:&lt;br&gt;Zero .sbss&lt;br&gt;Zero .bss" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#82B366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="790" y="2050" width="210" height="75" as="geometry"/>
+        </mxCell>
+        <mxCell id="runtime" value="Set SYS SP = __stack&lt;br&gt;Start TTC timer nếu cần&lt;br&gt;Xil_InitializeExistingMPURegConfig()&lt;br&gt;__libc_init_array()&lt;br&gt;r0 = argc = 0; r1 = argv = 0" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#82B366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="540" y="2185" width="480" height="125" as="geometry"/>
+        </mxCell>
+        <mxCell id="main" value="&lt;b&gt;bl main&lt;/b&gt;&lt;br&gt;xfsbl_main.c → STAGE 1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D79B00;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="640" y="2350" width="280" height="75" as="geometry"/>
+        </mxCell>
+        <mxCell id="return" value="Nếu main return:&lt;br&gt;__libc_fini_array() → exit() → loop" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8CECC;strokeColor=#B85450;fontSize=11;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="1380" y="2310" width="460" height="80" as="geometry"/>
+        </mxCell>
+
+        <!-- Context notes -->
+        <mxCell id="cfg" value="&lt;b&gt;BSP R5 tìm thấy trên máy&lt;/b&gt;&lt;br&gt;XPAR_CPU_ID = 0&lt;br&gt;PROCESSOR_ACCESS_VALUE = 255&lt;br&gt;LOCKSTEP_MODE_DEBUG = 0&lt;br&gt;SLEEP_TIMER_BASEADDR = TTC9" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#D6B656;fontSize=12;align=left;spacingLeft=12;" vertex="1" parent="1">
+          <mxGeometry x="1400" y="380" width="470" height="135" as="geometry"/>
+        </mxCell>
+        <mxCell id="cpsr_note" value="&lt;b&gt;CPSR mode bits [4:0]&lt;/b&gt;&lt;br&gt;FIQ 0x11 | IRQ 0x12 | SVC 0x13&lt;br&gt;ABT 0x17 | UND 0x1B | SYS 0x1F&lt;br&gt;&lt;br&gt;Mỗi mode có banked SP/LR riêng. Nếu không khởi tạo, exception sớm có thể dùng stack rác." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#D6B656;fontSize=12;align=left;spacingLeft=12;" vertex="1" parent="1">
+          <mxGeometry x="1400" y="570" width="470" height="155" as="geometry"/>
+        </mxCell>
+        <mxCell id="sctlr_note" value="&lt;b&gt;SCTLR bits được dùng&lt;/b&gt;&lt;br&gt;M bit 0: MPU&lt;br&gt;C bit 2: D-cache&lt;br&gt;I bit 12: I-cache&lt;br&gt;V bit 13: LOWVEC/HIGHVEC&lt;br&gt;&lt;br&gt;DSB/ISB bảo đảm đổi trạng thái có hiệu lực trước lệnh tiếp theo." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#D6B656;fontSize=12;align=left;spacingLeft=12;" vertex="1" parent="1">
+          <mxGeometry x="1400" y="780" width="470" height="175" as="geometry"/>
+        </mxCell>
+        <mxCell id="mpu_note" value="&lt;b&gt;Init_MPU() là C code trong section .boot&lt;/b&gt;&lt;br&gt;Startup assembly gọi nó trước khi bật SCTLR.M/C/I. Hàm tạo MPU regions cho TCM/DDR, PL, QSPI và vùng peripheral." style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#FFF2CC;strokeColor=#D6B656;fontSize=12;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="1400" y="1030" width="470" height="140" as="geometry"/>
+        </mxCell>
+        <mxCell id="warm_note" value="&lt;b&gt;Warm reset path&lt;/b&gt;&lt;br&gt;xil-crt0.S đọc MPIDR để chọn RPU_0_PWRCTL hoặc RPU_1_PWRCTL. Nếu bit 0 được set, bỏ qua zero .sbss/.bss để giữ context." style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#FFF2CC;strokeColor=#D6B656;fontSize=12;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="1400" y="1880" width="470" height="135" as="geometry"/>
+        </mxCell>
+        <mxCell id="source" value="&lt;b&gt;Source đã đối chiếu&lt;/b&gt;&lt;br&gt;standalone_v8_0/src/arm/cortexr5/gcc/&lt;br&gt;• asm_vectors.S&lt;br&gt;• boot.S&lt;br&gt;• xil-crt0.S&lt;br&gt;và platform/ZynqMP/mpu.c" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#D6B656;fontSize=12;align=left;spacingLeft=12;" vertex="1" parent="1">
+          <mxGeometry x="1400" y="2100" width="470" height="145" as="geometry"/>
+        </mxCell>
+
+        <!-- Edges -->
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#4B5563;" edge="1" parent="1" source="reset" target="vector"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#6C8EBF;" edge="1" parent="1" source="vector" target="boot"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#6C8EBF;" edge="1" parent="1" source="boot" target="zero_gpr"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#6C8EBF;" edge="1" parent="1" source="zero_gpr" target="banked_stack"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#6C8EBF;" edge="1" parent="1" source="banked_stack" target="fpu"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#B85450;" edge="1" parent="1" source="fpu" target="disable"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#6C8EBF;" edge="1" parent="1" source="disable" target="actlr"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#D6B656;" edge="1" parent="1" source="actlr" target="lockstep_check"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e9" value="Có" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#9673A6;fontSize=11;" edge="1" parent="1" source="lockstep_check" target="fault_log"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e10" value="Không" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#6C8EBF;fontSize=11;" edge="1" parent="1" source="lockstep_check" target="init_mpu"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#9673A6;" edge="1" parent="1" source="fault_log" target="init_mpu"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#82B366;" edge="1" parent="1" source="init_mpu" target="enable"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#D6B656;dashed=1;" edge="1" parent="1" source="enable" target="vec_mode"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e14" value="Không" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#9673A6;fontSize=11;" edge="1" parent="1" source="vec_mode" target="lovec"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e15" value="Có" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#666666;fontSize=11;" edge="1" parent="1" source="vec_mode" target="ocmvec"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e16" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#D6B656;" edge="1" parent="1" source="lovec" target="async_abort"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#666666;" edge="1" parent="1" source="ocmvec" target="async_abort"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e18" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#82B366;" edge="1" parent="1" source="async_abort" target="startup"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1325" y="1715"/><mxPoint x="1325" y="1865"/></Array></mxGeometry></mxCell>
+        <mxCell id="e19" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#82B366;" edge="1" parent="1" source="startup" target="cpu_init"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e20" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#D6B656;" edge="1" parent="1" source="cpu_init" target="warm"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e21" value="Không / cold" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#82B366;fontSize=11;" edge="1" parent="1" source="warm" target="clear_bss"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e22" value="Có / skip BSS" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#D79B00;fontSize=11;" edge="1" parent="1" source="warm" target="runtime"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e23" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#82B366;" edge="1" parent="1" source="clear_bss" target="runtime"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e24" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#D79B00;" edge="1" parent="1" source="runtime" target="main"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e25" value="return" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#B85450;fontSize=11;dashed=1;" edge="1" parent="1" source="main" target="return"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <diagram id="r5-exception-vectors" name="2 - Exception Vectors">
+    <mxGraphModel dx="1800" dy="1500" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1500" math="0" shadow="0">
+      <root>
+        <mxCell id="20"/>
+        <mxCell id="21" parent="20"/>
+
+        <mxCell id="t2" value="&lt;b&gt;CORTEX-R5 EXCEPTION VECTOR ASSEMBLY FLOW&lt;/b&gt;" style="text;html=1;align=center;verticalAlign=middle;fontSize=24;fontColor=#1F2937;fontStyle=1;" vertex="1" parent="21">
+          <mxGeometry x="250" y="25" width="1300" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="vt" value="&lt;b&gt;_vector_table (.vectors)&lt;/b&gt;&lt;br&gt;8 entries × 4 bytes = 32 bytes" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E5E7EB;strokeColor=#4B5563;fontSize=15;fontStyle=1;" vertex="1" parent="21">
+          <mxGeometry x="680" y="120" width="440" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="vreset" value="0x00 RESET&lt;br&gt;&lt;b&gt;ldr pc, =_boot&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontSize=12;" vertex="1" parent="21"><mxGeometry x="90" y="285" width="190" height="75" as="geometry"/></mxCell>
+        <mxCell id="vundef" value="0x04 UNDEFINED&lt;br&gt;ldr pc, =Undefined" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8CECC;strokeColor=#B85450;fontSize=12;" vertex="1" parent="21"><mxGeometry x="310" y="285" width="190" height="75" as="geometry"/></mxCell>
+        <mxCell id="vsvc" value="0x08 SVC/SWI&lt;br&gt;ldr pc, =SVCHandler" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D79B00;fontSize=12;" vertex="1" parent="21"><mxGeometry x="530" y="285" width="190" height="75" as="geometry"/></mxCell>
+        <mxCell id="vpref" value="0x0C PREFETCH ABORT&lt;br&gt;ldr pc, =PrefetchAbortHandler" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8CECC;strokeColor=#B85450;fontSize=11;" vertex="1" parent="21"><mxGeometry x="750" y="285" width="210" height="75" as="geometry"/></mxCell>
+        <mxCell id="vdata" value="0x10 DATA ABORT&lt;br&gt;ldr pc, =DataAbortHandler" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8CECC;strokeColor=#B85450;fontSize=11;" vertex="1" parent="21"><mxGeometry x="990" y="285" width="200" height="75" as="geometry"/></mxCell>
+        <mxCell id="vres" value="0x14 RESERVED&lt;br&gt;NOP" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#666666;fontSize=12;" vertex="1" parent="21"><mxGeometry x="1220" y="285" width="170" height="75" as="geometry"/></mxCell>
+        <mxCell id="virq" value="0x18 IRQ&lt;br&gt;ldr pc, =IRQHandler" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82B366;fontSize=12;" vertex="1" parent="21"><mxGeometry x="1420" y="285" width="170" height="75" as="geometry"/></mxCell>
+        <mxCell id="vfiq" value="0x1C FIQ&lt;br&gt;ldr pc, =FIQHandler" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;fontSize=12;" vertex="1" parent="21"><mxGeometry x="1610" y="285" width="160" height="75" as="geometry"/></mxCell>
+
+        <mxCell id="hreset" value="Đi vào boot.S&lt;br&gt;startup chính" style="ellipse;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontSize=12;" vertex="1" parent="21"><mxGeometry x="95" y="450" width="180" height="65" as="geometry"/></mxCell>
+        <mxCell id="hundef" value="Push r0-r3,r12,lr&lt;br&gt;Fault PC = lr - 4&lt;br&gt;UndefinedException()&lt;br&gt;Restore → movs pc,lr" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#B85450;fontSize=11;" vertex="1" parent="21"><mxGeometry x="300" y="430" width="210" height="105" as="geometry"/></mxCell>
+        <mxCell id="hsvc" value="Push context&lt;br&gt;Decode SWI immediate:&lt;br&gt;Thumb [lr-2] / ARM [lr-4]&lt;br&gt;SWInterrupt()&lt;br&gt;Restore → movs pc,lr" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#D79B00;fontSize=11;" vertex="1" parent="21"><mxGeometry x="520" y="425" width="210" height="115" as="geometry"/></mxCell>
+        <mxCell id="hpref" value="Push context&lt;br&gt;Fault PC = lr - 4&lt;br&gt;PrefetchAbortInterrupt()&lt;br&gt;Restore → subs pc,lr,#4" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#B85450;fontSize=11;" vertex="1" parent="21"><mxGeometry x="750" y="430" width="210" height="105" as="geometry"/></mxCell>
+        <mxCell id="hdata" value="Push context&lt;br&gt;Fault PC = lr - 8&lt;br&gt;DataAbortInterrupt()&lt;br&gt;Restore → subs pc,lr,#8" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#B85450;fontSize=11;" vertex="1" parent="21"><mxGeometry x="985" y="430" width="210" height="105" as="geometry"/></mxCell>
+        <mxCell id="hres" value="Không handler" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#666666;fontSize=11;" vertex="1" parent="21"><mxGeometry x="1225" y="450" width="160" height="65" as="geometry"/></mxCell>
+        <mxCell id="hirq" value="Push r0-r3,r12,lr&lt;br&gt;Nếu hard-float: save d0-d7,&lt;br&gt;FPSCR, FPEXC&lt;br&gt;IRQInterrupt()&lt;br&gt;Restore → subs pc,lr,#4" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#82B366;fontSize=11;" vertex="1" parent="21"><mxGeometry x="1400" y="420" width="210" height="125" as="geometry"/></mxCell>
+        <mxCell id="hfiq" value="Push r0-r3,r12,lr&lt;br&gt;FIQInterrupt()&lt;br&gt;Restore → subs pc,lr,#4" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#9673A6;fontSize=11;" vertex="1" parent="21"><mxGeometry x="1615" y="435" width="160" height="95" as="geometry"/></mxCell>
+
+        <mxCell id="dispatch" value="&lt;b&gt;Các symbol *Interrupt là C-level dispatchers của BSP&lt;/b&gt;&lt;br&gt;Sau khi FSBL gọi XFsbl_RegisterHandlers(), dispatcher trỏ đến:&lt;br&gt;XFsbl_UndefHandler / SvcHandler / PreFetchAbortHandler / DataAbortHandler / IrqHandler / FiqHandler" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF2CC;strokeColor=#D6B656;fontSize=13;align=center;" vertex="1" parent="21">
+          <mxGeometry x="330" y="650" width="1140" height="120" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="mode" value="&lt;b&gt;Mode switch do phần cứng Cortex-R5 thực hiện&lt;/b&gt;&lt;br&gt;Exception xảy ra → CPSR mode đổi → SP/LR banked tương ứng được dùng → vector entry → assembly wrapper → C handler → exception return" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;fontSize=13;" vertex="1" parent="21">
+          <mxGeometry x="420" y="850" width="960" height="100" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="loc" value="&lt;b&gt;Vector location&lt;/b&gt;&lt;br&gt;LOVEC: 0x00000000 khi SCTLR.V=0&lt;br&gt;HIGHVEC: 0xFFFF0000 khi SCTLR.V=1&lt;br&gt;FSBL R5 tạm chuyển HIGHVEC khi nạp application đè vùng vector ở TCM 0x0." style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#FFF2CC;strokeColor=#D6B656;fontSize=12;align=left;spacingLeft=12;" vertex="1" parent="21">
+          <mxGeometry x="540" y="1040" width="720" height="130" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="src2" value="Source: standalone_v8_0/src/arm/cortexr5/gcc/asm_vectors.S" style="text;html=1;align=center;verticalAlign=middle;fontSize=11;fontColor=#666666;" vertex="1" parent="21"><mxGeometry x="500" y="1260" width="800" height="30" as="geometry"/></mxCell>
+
+        <mxCell id="ve1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#6C8EBF;" edge="1" parent="21" source="vt" target="vreset"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ve2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#B85450;" edge="1" parent="21" source="vt" target="vundef"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ve3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#D79B00;" edge="1" parent="21" source="vt" target="vsvc"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ve4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#B85450;" edge="1" parent="21" source="vt" target="vpref"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ve5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#B85450;" edge="1" parent="21" source="vt" target="vdata"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ve6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#666666;" edge="1" parent="21" source="vt" target="vres"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ve7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#82B366;" edge="1" parent="21" source="vt" target="virq"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="ve8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#9673A6;" edge="1" parent="21" source="vt" target="vfiq"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="vh1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#6C8EBF;" edge="1" parent="21" source="vreset" target="hreset"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="vh2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#B85450;" edge="1" parent="21" source="vundef" target="hundef"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="vh3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#D79B00;" edge="1" parent="21" source="vsvc" target="hsvc"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="vh4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#B85450;" edge="1" parent="21" source="vpref" target="hpref"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="vh5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#B85450;" edge="1" parent="21" source="vdata" target="hdata"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="vh6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#666666;" edge="1" parent="21" source="vres" target="hres"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="vh7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#82B366;" edge="1" parent="21" source="virq" target="hirq"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="vh8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#9673A6;" edge="1" parent="21" source="vfiq" target="hfiq"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -1,0 +1,556 @@
+// SPDX-License-Identifier: MIT
+/*
+ * Copyright (C) 2010-2020 Xilinx, Inc.
+ * Standalone extraction Copyright (C) 2026 Viettel Semiconductor Center
+ *
+ * Standalone ZCU102 PS DDR4 initialization.
+ *
+ * Extracted from the Vitis 2024.2 generated psu_init.c in this project:
+ *   - psu_pll_init_data(): DPLL portion only
+ *   - psu_clock_init_data(): DDR clock portion only
+ *   - psu_ddr_init_data()
+ *   - psu_ddr_phybringup_data()
+ *   - psu_ddr_qos_init_data()
+ *
+ * IMPORTANT:
+ *   This initializes the Zynq UltraScale+ MPSoC PS DDR controller and PS DDR
+ *   PHY (registers 0xFD07_xxxx and 0xFD08_xxxx). It does NOT initialize the
+ *   ZCU102 PL-side DDR4 component or a Xilinx MIG instance in programmable
+ *   logic.
+ *
+ * The register values are board/design generated values. They are suitable
+ * only for the same ZCU102 PS DDR topology, reference clock, frequency and
+ * routing as the source hardware design. Regenerate them when any of those
+ * parameters changes.
+ *
+ * Run this code from OCM/TCM before using DDR. The caller must ensure that:
+ *   - device MMIO is accessible and mapped as Device memory if the MMU is on;
+ *   - the PS reference clock and power/reset prerequisites are satisfied;
+ *   - no active master is accessing PS DDR while it is being initialized.
+ *
+ * Public API:
+ *   int zcu102_ps_ddr_init(void);
+ *
+ * Return value is 0 on success or a negative enum zcu102_ps_ddr_status value.
+ *
+ * A project may override the MMIO and polling hooks at compile time:
+ *   ZCU102_PS_DDR_READ32(address)
+ *   ZCU102_PS_DDR_WRITE32(address, value)
+ *   ZCU102_PS_DDR_POLL_HOOK()
+ *   ZCU102_PS_DDR_POLL_LIMIT
+ */
+
+#include <stdint.h>
+
+#ifndef ZCU102_PS_DDR_POLL_LIMIT
+#define ZCU102_PS_DDR_POLL_LIMIT 10000000U
+#endif
+
+#ifndef ZCU102_PS_DDR_READ32
+#define ZCU102_PS_DDR_READ32(address) \
+    (*(volatile uint32_t *)(uintptr_t)(address))
+#endif
+
+#ifndef ZCU102_PS_DDR_WRITE32
+#define ZCU102_PS_DDR_WRITE32(address, value) \
+    (*(volatile uint32_t *)(uintptr_t)(address) = (uint32_t)(value))
+#endif
+
+#ifndef ZCU102_PS_DDR_POLL_HOOK
+#define ZCU102_PS_DDR_POLL_HOOK() do { } while (0)
+#endif
+
+enum zcu102_ps_ddr_status {
+    ZCU102_PS_DDR_OK = 0,
+    ZCU102_PS_DDR_ERR_DPLL_LOCK = -1,
+    ZCU102_PS_DDR_ERR_PHY_PLL_INIT_TIMEOUT = -2,
+    ZCU102_PS_DDR_ERR_PHY_PLL_LOCK = -3,
+    ZCU102_PS_DDR_ERR_PHY_INIT_TIMEOUT = -4,
+    ZCU102_PS_DDR_ERR_DDRC_NORMAL_TIMEOUT = -5,
+    ZCU102_PS_DDR_ERR_TRAINING_TIMEOUT = -6,
+    ZCU102_PS_DDR_ERR_TRAINING = -7,
+};
+
+struct zcu102_ps_ddr_reg_write {
+    uint32_t address;
+    uint32_t mask;
+    uint32_t value;
+};
+
+static inline uint32_t ddr_read32(uint32_t address)
+{
+    return ZCU102_PS_DDR_READ32(address);
+}
+
+static inline void ddr_write32(uint32_t address, uint32_t value)
+{
+    ZCU102_PS_DDR_WRITE32(address, value);
+}
+
+static void ddr_mask_write(uint32_t address, uint32_t mask, uint32_t value)
+{
+    uint32_t current;
+
+    if (mask == UINT32_MAX) {
+        ddr_write32(address, value);
+        return;
+    }
+
+    current = ddr_read32(address);
+    current = (current & ~mask) | (value & mask);
+    ddr_write32(address, current);
+}
+
+static void ddr_prog_field(uint32_t address, uint32_t mask,
+                           uint32_t shift, uint32_t value)
+{
+    ddr_mask_write(address, mask, value << shift);
+}
+
+static int ddr_poll(uint32_t address, uint32_t mask, uint32_t expected)
+{
+    uint32_t count;
+
+    for (count = 0; count < ZCU102_PS_DDR_POLL_LIMIT; ++count) {
+        if ((ddr_read32(address) & mask) == expected)
+            return ZCU102_PS_DDR_OK;
+        ZCU102_PS_DDR_POLL_HOOK();
+    }
+
+    return -1;
+}
+
+static int ddr_training_failed(uint32_t pgsr0)
+{
+    /* Preserve the error test used by the generated PHY bring-up code. */
+    return ((pgsr0 & 0x1FFF0000U) >> 18U) != 0U;
+}
+
+static void ddr_apply_table(const struct zcu102_ps_ddr_reg_write *table,
+                            uint32_t count)
+{
+    uint32_t index;
+
+    for (index = 0; index < count; ++index)
+        ddr_mask_write(table[index].address, table[index].mask,
+                       table[index].value);
+}
+
+/*
+ * Exact static DDRC/PHY configuration emitted by the source hardware design.
+ * Order is significant.
+ */
+static const struct zcu102_ps_ddr_reg_write zcu102_ddr_config[] = {
+    { 0XFD1A0108U, 0x00000008U, 0x00000008U },
+    { 0XFD070000U, 0xE30FBE3DU, 0x41040010U },
+    { 0XFD070010U, 0x8000F03FU, 0x00000030U },
+    { 0XFD070020U, 0x000003F3U, 0x00000200U },
+    { 0XFD070024U, 0xFFFFFFFFU, 0x00800000U },
+    { 0XFD070030U, 0x0000007FU, 0x00000000U },
+    { 0XFD070034U, 0x00FFFF1FU, 0x00408410U },
+    { 0XFD070050U, 0x00F1F1F4U, 0x00210000U },
+    { 0XFD070054U, 0x0FFF0FFFU, 0x00000000U },
+    { 0XFD070060U, 0x00000073U, 0x00000001U },
+    { 0XFD070064U, 0x0FFF83FFU, 0x0081808BU },
+    { 0XFD070070U, 0x00000017U, 0x00000010U },
+    { 0XFD070074U, 0x00000003U, 0x00000000U },
+    { 0XFD0700C4U, 0x3F000391U, 0x10000200U },
+    { 0XFD0700C8U, 0x01FF1F3FU, 0x0040051FU },
+    { 0XFD0700D0U, 0xC3FF0FFFU, 0x00020106U },
+    { 0XFD0700D4U, 0x01FF7F0FU, 0x00020000U },
+    { 0XFD0700D8U, 0x0000FF0FU, 0x00002305U },
+    { 0XFD0700DCU, 0xFFFFFFFFU, 0x07300301U },
+    { 0XFD0700E0U, 0xFFFFFFFFU, 0x00200200U },
+    { 0XFD0700E4U, 0x00FF03FFU, 0x00210004U },
+    { 0XFD0700E8U, 0xFFFFFFFFU, 0x000006C0U },
+    { 0XFD0700ECU, 0xFFFF0000U, 0x08190000U },
+    { 0XFD0700F0U, 0x0000003FU, 0x00000010U },
+    { 0XFD0700F4U, 0x00000FFFU, 0x0000066FU },
+    { 0XFD070100U, 0x7F3F7F3FU, 0x11102412U },
+    { 0XFD070104U, 0x001F1F7FU, 0x0004041AU },
+    { 0XFD070108U, 0x3F3F3F3FU, 0x0708060DU },
+    { 0XFD07010CU, 0x3FF3F3FFU, 0x0050400CU },
+    { 0XFD070110U, 0x1F0F0F1FU, 0x08030309U },
+    { 0XFD070114U, 0x0F0F3F1FU, 0x06060403U },
+    { 0XFD070118U, 0x0F0F000FU, 0x01010004U },
+    { 0XFD07011CU, 0x00000F0FU, 0x00000606U },
+    { 0XFD070120U, 0x7F7F7F7FU, 0x03030D06U },
+    { 0XFD070124U, 0x40070F3FU, 0x0002020BU },
+    { 0XFD07012CU, 0x7F1F031FU, 0x1107010EU },
+    { 0XFD070130U, 0x00030F1FU, 0x00020608U },
+    { 0XFD070180U, 0xF7FF03FFU, 0x81000040U },
+    { 0XFD070184U, 0x3FFFFFFFU, 0x020196DCU },
+    { 0XFD070190U, 0x1FBFBF3FU, 0x048B820BU },
+    { 0XFD070194U, 0xF31F0F0FU, 0x00030304U },
+    { 0XFD070198U, 0x0FF1F1F1U, 0x07000101U },
+    { 0XFD07019CU, 0x000000F1U, 0x00000021U },
+    { 0XFD0701A0U, 0xC3FF03FFU, 0x00400003U },
+    { 0XFD0701A4U, 0x00FF00FFU, 0x00C800FFU },
+    { 0XFD0701B0U, 0x00000007U, 0x00000000U },
+    { 0XFD0701B4U, 0x00003F3FU, 0x00000909U },
+    { 0XFD0701C0U, 0x00000007U, 0x00000001U },
+    { 0XFD070200U, 0x0000001FU, 0x0000001FU },
+    { 0XFD070204U, 0x001F1F1FU, 0x001F0A0AU },
+    { 0XFD070208U, 0x0F0F0F0FU, 0x01010100U },
+    { 0XFD07020CU, 0x0F0F0F0FU, 0x01010101U },
+    { 0XFD070210U, 0x00000F0FU, 0x00000F0FU },
+    { 0XFD070214U, 0x0F0F0F0FU, 0x080F0808U },
+    { 0XFD070218U, 0x8F0F0F0FU, 0x0F080808U },
+    { 0XFD07021CU, 0x00000F0FU, 0x00000F0FU },
+    { 0XFD070220U, 0x00001F1FU, 0x00000801U },
+    { 0XFD070224U, 0x0F0F0F0FU, 0x08080808U },
+    { 0XFD070228U, 0x0F0F0F0FU, 0x08080808U },
+    { 0XFD07022CU, 0x0000000FU, 0x00000008U },
+    { 0XFD070240U, 0x0F1F0F7CU, 0x06000600U },
+    { 0XFD070244U, 0x00003333U, 0x00000001U },
+    { 0XFD070250U, 0x7FFF3F07U, 0x01002001U },
+    { 0XFD070264U, 0xFF00FFFFU, 0x08000040U },
+    { 0XFD07026CU, 0xFF00FFFFU, 0x08000040U },
+    { 0XFD070280U, 0xFFFFFFFFU, 0x00000000U },
+    { 0XFD070284U, 0xFFFFFFFFU, 0x00000000U },
+    { 0XFD070288U, 0xFFFFFFFFU, 0x00000000U },
+    { 0XFD07028CU, 0xFFFFFFFFU, 0x00000000U },
+    { 0XFD070290U, 0x0000FFFFU, 0x00000000U },
+    { 0XFD070294U, 0x00000001U, 0x00000001U },
+    { 0XFD070300U, 0x00000011U, 0x00000000U },
+    { 0XFD07030CU, 0x80000033U, 0x00000000U },
+    { 0XFD070320U, 0x00000001U, 0x00000000U },
+    { 0XFD070400U, 0x00000111U, 0x00000001U },
+    { 0XFD070404U, 0x000073FFU, 0x0000200FU },
+    { 0XFD070408U, 0x000073FFU, 0x0000200FU },
+    { 0XFD070490U, 0x00000001U, 0x00000001U },
+    { 0XFD070494U, 0x0033000FU, 0x0020000BU },
+    { 0XFD070498U, 0x07FF07FFU, 0x00000000U },
+    { 0XFD0704B4U, 0x000073FFU, 0x0000200FU },
+    { 0XFD0704B8U, 0x000073FFU, 0x0000200FU },
+    { 0XFD070540U, 0x00000001U, 0x00000001U },
+    { 0XFD070544U, 0x03330F0FU, 0x02000B03U },
+    { 0XFD070548U, 0x07FF07FFU, 0x00000000U },
+    { 0XFD070564U, 0x000073FFU, 0x0000200FU },
+    { 0XFD070568U, 0x000073FFU, 0x0000200FU },
+    { 0XFD0705F0U, 0x00000001U, 0x00000001U },
+    { 0XFD0705F4U, 0x03330F0FU, 0x02000B03U },
+    { 0XFD0705F8U, 0x07FF07FFU, 0x00000000U },
+    { 0XFD070614U, 0x000073FFU, 0x0000200FU },
+    { 0XFD070618U, 0x000073FFU, 0x0000200FU },
+    { 0XFD0706A0U, 0x00000001U, 0x00000001U },
+    { 0XFD0706A4U, 0x0033000FU, 0x00100003U },
+    { 0XFD0706A8U, 0x07FF07FFU, 0x0000004FU },
+    { 0XFD0706ACU, 0x0033000FU, 0x00100003U },
+    { 0XFD0706B0U, 0x000007FFU, 0x0000004FU },
+    { 0XFD0706C4U, 0x000073FFU, 0x0000200FU },
+    { 0XFD0706C8U, 0x000073FFU, 0x0000200FU },
+    { 0XFD070750U, 0x00000001U, 0x00000001U },
+    { 0XFD070754U, 0x0033000FU, 0x00100003U },
+    { 0XFD070758U, 0x07FF07FFU, 0x0000004FU },
+    { 0XFD07075CU, 0x0033000FU, 0x00100003U },
+    { 0XFD070760U, 0x000007FFU, 0x0000004FU },
+    { 0XFD070774U, 0x000073FFU, 0x0000200FU },
+    { 0XFD070778U, 0x000073FFU, 0x0000200FU },
+    { 0XFD070800U, 0x00000001U, 0x00000001U },
+    { 0XFD070804U, 0x0033000FU, 0x00100003U },
+    { 0XFD070808U, 0x07FF07FFU, 0x0000004FU },
+    { 0XFD07080CU, 0x0033000FU, 0x00100003U },
+    { 0XFD070810U, 0x000007FFU, 0x0000004FU },
+    { 0XFD070F04U, 0x000001FFU, 0x00000000U },
+    { 0XFD070F08U, 0x000000FFU, 0x00000000U },
+    { 0XFD070F0CU, 0x000001FFU, 0x00000010U },
+    { 0XFD070F10U, 0x000000FFU, 0x0000000FU },
+    { 0XFD072190U, 0x1FBFBF3FU, 0x07828002U },
+    { 0XFD1A0108U, 0x0000000CU, 0x00000000U },
+    { 0XFD080010U, 0xFFFFFFFFU, 0x07001E00U },
+    { 0XFD080018U, 0xFFFFFFFFU, 0x00F10010U },
+    { 0XFD08001CU, 0xFFFFFFFFU, 0x55AA5480U },
+    { 0XFD080024U, 0xFFFFFFFFU, 0x010100F4U },
+    { 0XFD080040U, 0xFFFFFFFFU, 0x42C21590U },
+    { 0XFD080044U, 0xFFFFFFFFU, 0xD05112C0U },
+    { 0XFD080068U, 0xFFFFFFFFU, 0x01100000U },
+    { 0XFD080090U, 0xFFFFFFFFU, 0x02A04161U },
+    { 0XFD0800C0U, 0xFFFFFFFFU, 0x00000000U },
+    { 0XFD0800C4U, 0xFFFFFFFFU, 0x000000E5U },
+    { 0XFD080100U, 0xFFFFFFFFU, 0x0800040CU },
+    { 0XFD080110U, 0xFFFFFFFFU, 0x06240F08U },
+    { 0XFD080114U, 0xFFFFFFFFU, 0x28200008U },
+    { 0XFD080118U, 0xFFFFFFFFU, 0x000F0300U },
+    { 0XFD08011CU, 0xFFFFFFFFU, 0x83000800U },
+    { 0XFD080120U, 0xFFFFFFFFU, 0x01162B07U },
+    { 0XFD080124U, 0xFFFFFFFFU, 0x00330F08U },
+    { 0XFD080128U, 0xFFFFFFFFU, 0x00000E0FU },
+    { 0XFD080140U, 0xFFFFFFFFU, 0x08400020U },
+    { 0XFD080144U, 0xFFFFFFFFU, 0x00000C80U },
+    { 0XFD080150U, 0xFFFFFFFFU, 0x00000000U },
+    { 0XFD080154U, 0xFFFFFFFFU, 0x00000300U },
+    { 0XFD080180U, 0xFFFFFFFFU, 0x00000630U },
+    { 0XFD080184U, 0xFFFFFFFFU, 0x00000301U },
+    { 0XFD080188U, 0xFFFFFFFFU, 0x00000020U },
+    { 0XFD08018CU, 0xFFFFFFFFU, 0x00000200U },
+    { 0XFD080190U, 0xFFFFFFFFU, 0x00000000U },
+    { 0XFD080194U, 0xFFFFFFFFU, 0x000006C0U },
+    { 0XFD080198U, 0xFFFFFFFFU, 0x00000819U },
+    { 0XFD0801ACU, 0xFFFFFFFFU, 0x00000000U },
+    { 0XFD0801B0U, 0xFFFFFFFFU, 0x0000004DU },
+    { 0XFD0801B4U, 0xFFFFFFFFU, 0x00000008U },
+    { 0XFD0801B8U, 0xFFFFFFFFU, 0x0000004DU },
+    { 0XFD0801D8U, 0xFFFFFFFFU, 0x00000000U },
+    { 0XFD080200U, 0xFFFFFFFFU, 0x800091C7U },
+    { 0XFD080204U, 0xFFFFFFFFU, 0x00010236U },
+    { 0XFD080240U, 0xFFFFFFFFU, 0x00141054U },
+    { 0XFD080250U, 0xFFFFFFFFU, 0x00088000U },
+    { 0XFD080414U, 0xFFFFFFFFU, 0x12341000U },
+    { 0XFD0804F4U, 0xFFFFFFFFU, 0x00000005U },
+    { 0XFD080500U, 0xFFFFFFFFU, 0x30000028U },
+    { 0XFD080508U, 0xFFFFFFFFU, 0x0A000000U },
+    { 0XFD08050CU, 0xFFFFFFFFU, 0x00000009U },
+    { 0XFD080510U, 0xFFFFFFFFU, 0x0A000000U },
+    { 0XFD080520U, 0xFFFFFFFFU, 0x0300B0CEU },
+    { 0XFD080528U, 0xFFFFFFFFU, 0xF9032019U },
+    { 0XFD08052CU, 0xFFFFFFFFU, 0x07F001E3U },
+    { 0XFD080544U, 0xFFFFFFFFU, 0x00000000U },
+    { 0XFD080548U, 0xFFFFFFFFU, 0x00000000U },
+    { 0XFD080558U, 0xFFFFFFFFU, 0x00000000U },
+    { 0XFD08055CU, 0xFFFFFFFFU, 0x00000000U },
+    { 0XFD080560U, 0xFFFFFFFFU, 0x00000000U },
+    { 0XFD080564U, 0xFFFFFFFFU, 0x00000000U },
+    { 0XFD080680U, 0xFFFFFFFFU, 0x008AAA58U },
+    { 0XFD080684U, 0xFFFFFFFFU, 0x000079DDU },
+    { 0XFD080694U, 0xFFFFFFFFU, 0x01E10210U },
+    { 0XFD080698U, 0xFFFFFFFFU, 0x01E10000U },
+    { 0XFD0806A4U, 0xFFFFFFFFU, 0x00087BDBU },
+    { 0XFD080700U, 0xFFFFFFFFU, 0x40800604U },
+    { 0XFD080704U, 0xFFFFFFFFU, 0x00007FFFU },
+    { 0XFD08070CU, 0xFFFFFFFFU, 0x3F000008U },
+    { 0XFD080710U, 0xFFFFFFFFU, 0x0E00B004U },
+    { 0XFD080714U, 0xFFFFFFFFU, 0x09095555U },
+    { 0XFD080718U, 0xFFFFFFFFU, 0x09092B2BU },
+    { 0XFD080800U, 0xFFFFFFFFU, 0x40800604U },
+    { 0XFD080804U, 0xFFFFFFFFU, 0x00007FFFU },
+    { 0XFD08080CU, 0xFFFFFFFFU, 0x3F000008U },
+    { 0XFD080810U, 0xFFFFFFFFU, 0x0E00B004U },
+    { 0XFD080814U, 0xFFFFFFFFU, 0x09095555U },
+    { 0XFD080818U, 0xFFFFFFFFU, 0x09092B2BU },
+    { 0XFD080900U, 0xFFFFFFFFU, 0x40800604U },
+    { 0XFD080904U, 0xFFFFFFFFU, 0x00007FFFU },
+    { 0XFD08090CU, 0xFFFFFFFFU, 0x3F000008U },
+    { 0XFD080910U, 0xFFFFFFFFU, 0x0E00B004U },
+    { 0XFD080914U, 0xFFFFFFFFU, 0x09095555U },
+    { 0XFD080918U, 0xFFFFFFFFU, 0x09092B2BU },
+    { 0XFD080A00U, 0xFFFFFFFFU, 0x40800604U },
+    { 0XFD080A04U, 0xFFFFFFFFU, 0x00007FFFU },
+    { 0XFD080A0CU, 0xFFFFFFFFU, 0x3F000008U },
+    { 0XFD080A10U, 0xFFFFFFFFU, 0x0E00B004U },
+    { 0XFD080A14U, 0xFFFFFFFFU, 0x09095555U },
+    { 0XFD080A18U, 0xFFFFFFFFU, 0x09092B2BU },
+    { 0XFD080B00U, 0xFFFFFFFFU, 0x40800604U },
+    { 0XFD080B04U, 0xFFFFFFFFU, 0x00007FFFU },
+    { 0XFD080B08U, 0xFFFFFFFFU, 0x00000000U },
+    { 0XFD080B0CU, 0xFFFFFFFFU, 0x3F000008U },
+    { 0XFD080B10U, 0xFFFFFFFFU, 0x0E00B004U },
+    { 0XFD080B14U, 0xFFFFFFFFU, 0x09095555U },
+    { 0XFD080B18U, 0xFFFFFFFFU, 0x09092B2BU },
+    { 0XFD080C00U, 0xFFFFFFFFU, 0x40800604U },
+    { 0XFD080C04U, 0xFFFFFFFFU, 0x00007FFFU },
+    { 0XFD080C08U, 0xFFFFFFFFU, 0x00000000U },
+    { 0XFD080C0CU, 0xFFFFFFFFU, 0x3F000008U },
+    { 0XFD080C10U, 0xFFFFFFFFU, 0x0E00B03CU },
+    { 0XFD080C14U, 0xFFFFFFFFU, 0x09095555U },
+    { 0XFD080C18U, 0xFFFFFFFFU, 0x09092B2BU },
+    { 0XFD080D00U, 0xFFFFFFFFU, 0x40800604U },
+    { 0XFD080D04U, 0xFFFFFFFFU, 0x00007FFFU },
+    { 0XFD080D08U, 0xFFFFFFFFU, 0x00000000U },
+    { 0XFD080D0CU, 0xFFFFFFFFU, 0x3F000008U },
+    { 0XFD080D10U, 0xFFFFFFFFU, 0x0E00B004U },
+    { 0XFD080D14U, 0xFFFFFFFFU, 0x09095555U },
+    { 0XFD080D18U, 0xFFFFFFFFU, 0x09092B2BU },
+    { 0XFD080E00U, 0xFFFFFFFFU, 0x40800604U },
+    { 0XFD080E04U, 0xFFFFFFFFU, 0x00007FFFU },
+    { 0XFD080E08U, 0xFFFFFFFFU, 0x00000000U },
+    { 0XFD080E0CU, 0xFFFFFFFFU, 0x3F000008U },
+    { 0XFD080E10U, 0xFFFFFFFFU, 0x0E00B03CU },
+    { 0XFD080E14U, 0xFFFFFFFFU, 0x09095555U },
+    { 0XFD080E18U, 0xFFFFFFFFU, 0x09092B2BU },
+    { 0XFD080F00U, 0xFFFFFFFFU, 0x80803660U },
+    { 0XFD080F04U, 0xFFFFFFFFU, 0x55556000U },
+    { 0XFD080F08U, 0xFFFFFFFFU, 0xAAAAAAAAU },
+    { 0XFD080F0CU, 0xFFFFFFFFU, 0x0029A4A4U },
+    { 0XFD080F10U, 0xFFFFFFFFU, 0x0C00B000U },
+    { 0XFD080F14U, 0xFFFFFFFFU, 0x09095555U },
+    { 0XFD080F18U, 0xFFFFFFFFU, 0x09092B2BU },
+    { 0XFD081400U, 0xFFFFFFFFU, 0x2A019FFEU },
+    { 0XFD081404U, 0xFFFFFFFFU, 0x01100000U },
+    { 0XFD08141CU, 0xFFFFFFFFU, 0x01264300U },
+    { 0XFD08142CU, 0xFFFFFFFFU, 0x00041800U },
+    { 0XFD081430U, 0xFFFFFFFFU, 0x70800000U },
+    { 0XFD081440U, 0xFFFFFFFFU, 0x2A019FFEU },
+    { 0XFD081444U, 0xFFFFFFFFU, 0x01100000U },
+    { 0XFD08145CU, 0xFFFFFFFFU, 0x01264300U },
+    { 0XFD08146CU, 0xFFFFFFFFU, 0x00041800U },
+    { 0XFD081470U, 0xFFFFFFFFU, 0x70800000U },
+    { 0XFD081480U, 0xFFFFFFFFU, 0x2A019FFEU },
+    { 0XFD081484U, 0xFFFFFFFFU, 0x01100000U },
+    { 0XFD08149CU, 0xFFFFFFFFU, 0x01264300U },
+    { 0XFD0814ACU, 0xFFFFFFFFU, 0x00041800U },
+    { 0XFD0814B0U, 0xFFFFFFFFU, 0x70800000U },
+    { 0XFD0814C0U, 0xFFFFFFFFU, 0x2A019FFEU },
+    { 0XFD0814C4U, 0xFFFFFFFFU, 0x01100000U },
+    { 0XFD0814DCU, 0xFFFFFFFFU, 0x01264300U },
+    { 0XFD0814ECU, 0xFFFFFFFFU, 0x00041800U },
+    { 0XFD0814F0U, 0xFFFFFFFFU, 0x70800000U },
+    { 0XFD081500U, 0xFFFFFFFFU, 0x15019FFEU },
+    { 0XFD081504U, 0xFFFFFFFFU, 0x21100000U },
+    { 0XFD08151CU, 0xFFFFFFFFU, 0x01266300U },
+    { 0XFD08152CU, 0xFFFFFFFFU, 0x00041800U },
+    { 0XFD081530U, 0xFFFFFFFFU, 0x70400000U },
+    { 0XFD0817DCU, 0xFFFFFFFFU, 0x012643C4U },
+};
+
+/* AFI QoS values emitted by psu_ddr_qos_init_data(). */
+static const struct zcu102_ps_ddr_reg_write zcu102_ddr_qos[] = {
+    { 0XFD360008U, 0x0000000FU, 0x00000000U },
+    { 0XFD36001CU, 0x0000000FU, 0x00000000U },
+    { 0XFD370008U, 0x0000000FU, 0x00000000U },
+    { 0XFD37001CU, 0x0000000FU, 0x00000000U },
+    { 0XFD380008U, 0x0000000FU, 0x00000000U },
+    { 0XFD38001CU, 0x0000000FU, 0x00000000U },
+    { 0XFD390008U, 0x0000000FU, 0x00000000U },
+    { 0XFD39001CU, 0x0000000FU, 0x00000000U },
+    { 0XFD3A0008U, 0x0000000FU, 0x00000000U },
+    { 0XFD3A001CU, 0x0000000FU, 0x00000000U },
+    { 0XFD3B0008U, 0x0000000FU, 0x00000000U },
+    { 0XFD3B001CU, 0x0000000FU, 0x00000000U },
+    { 0XFF9B0008U, 0x0000000FU, 0x00000000U },
+    { 0XFF9B001CU, 0x0000000FU, 0x00000000U },
+};
+
+static int zcu102_init_dpll_and_ddr_clock(void)
+{
+    /* DPLL generated settings: FBDIV=64, DIV2=1, pss_ref_clk source. */
+    ddr_mask_write(0xFD1A0030U, 0xFE7FEDEFU, 0x7E4B0C62U);
+    ddr_mask_write(0xFD1A002CU, 0x00717F00U, 0x00014000U);
+    ddr_mask_write(0xFD1A002CU, 0x00000008U, 0x00000008U);
+    ddr_mask_write(0xFD1A002CU, 0x00000001U, 0x00000001U);
+    ddr_mask_write(0xFD1A002CU, 0x00000001U, 0x00000000U);
+
+    if (ddr_poll(0xFD1A0044U, 0x00000002U, 0x00000002U) != 0)
+        return ZCU102_PS_DDR_ERR_DPLL_LOCK;
+
+    ddr_mask_write(0xFD1A002CU, 0x00000008U, 0x00000000U);
+
+    /* DDR clock: DPLL source, divisor 2. */
+    ddr_mask_write(0xFD1A0080U, 0x00003F07U, 0x00000200U);
+
+    return ZCU102_PS_DDR_OK;
+}
+
+static int zcu102_ddr_phy_bringup(void)
+{
+    uint32_t regval;
+    uint32_t pll_retry = 10U;
+    uint32_t pll_locked = 0U;
+    uint32_t trefprd;
+
+    while ((pll_retry > 0U) && (pll_locked == 0U)) {
+        ddr_write32(0xFD080004U, 0x00040010U);
+        ddr_write32(0xFD080004U, 0x00040011U);
+
+        if (ddr_poll(0xFD080030U, 0x00000001U, 0x00000001U) != 0)
+            return ZCU102_PS_DDR_ERR_PHY_PLL_INIT_TIMEOUT;
+
+        pll_locked = (ddr_read32(0xFD080030U) >> 31) & 1U;
+        pll_locked &= (ddr_read32(0xFD0807E0U) >> 16) & 1U;
+        pll_locked &= (ddr_read32(0xFD0809E0U) >> 16) & 1U;
+        pll_locked &= (ddr_read32(0xFD080BE0U) >> 16) & 1U;
+        pll_locked &= (ddr_read32(0xFD080DE0U) >> 16) & 1U;
+        --pll_retry;
+    }
+
+    ddr_write32(0xFD0800C4U, ddr_read32(0xFD0800C4U) |
+                 (pll_retry << 16));
+    if (pll_locked == 0U)
+        return ZCU102_PS_DDR_ERR_PHY_PLL_LOCK;
+
+    ddr_write32(0xFD080004U, 0x00040063U);
+    if (ddr_poll(0xFD080030U, 0x0000000FU, 0x0000000FU) != 0)
+        return ZCU102_PS_DDR_ERR_PHY_INIT_TIMEOUT;
+
+    ddr_prog_field(0xFD080004U, 0x00000001U, 0U, 1U);
+    if (ddr_poll(0xFD080030U, 0x000000FFU, 0x0000001FU) != 0)
+        return ZCU102_PS_DDR_ERR_PHY_INIT_TIMEOUT;
+
+    ddr_write32(0xFD0701B0U, 0x00000001U);
+    ddr_write32(0xFD070320U, 0x00000001U);
+    if (ddr_poll(0xFD070004U, 0x0000000FU, 0x00000001U) != 0)
+        return ZCU102_PS_DDR_ERR_DDRC_NORMAL_TIMEOUT;
+
+    ddr_prog_field(0xFD080014U, 0x00000040U, 6U, 1U);
+    ddr_write32(0xFD080004U, 0x0004FE01U);
+
+    if (ddr_poll(0xFD080030U, 0x80000FFFU, 0x80000FFFU) != 0)
+        return ZCU102_PS_DDR_ERR_TRAINING_TIMEOUT;
+    if (ddr_training_failed(ddr_read32(0xFD080030U)))
+        return ZCU102_PS_DDR_ERR_TRAINING;
+
+    /* Run Vref training in static-read mode. */
+    ddr_write32(0xFD080200U, 0x100091C7U);
+    trefprd = ddr_read32(0xFD080018U) & 0x0003FFFFU;
+    ddr_prog_field(0xFD080018U, 0x0003FFFFU, 0U, trefprd);
+
+    ddr_prog_field(0xFD08001CU, 0x00000018U, 3U, 3U);
+    ddr_prog_field(0xFD08142CU, 0x00000030U, 4U, 3U);
+    ddr_prog_field(0xFD08146CU, 0x00000030U, 4U, 3U);
+    ddr_prog_field(0xFD0814ACU, 0x00000030U, 4U, 3U);
+    ddr_prog_field(0xFD0814ECU, 0x00000030U, 4U, 3U);
+    ddr_prog_field(0xFD08152CU, 0x00000030U, 4U, 3U);
+
+    ddr_write32(0xFD080004U, 0x00060001U);
+    if (ddr_poll(0xFD080030U, 0x80004001U, 0x80004001U) != 0)
+        return ZCU102_PS_DDR_ERR_TRAINING_TIMEOUT;
+    if (ddr_training_failed(ddr_read32(0xFD080030U)))
+        return ZCU102_PS_DDR_ERR_TRAINING;
+
+    ddr_prog_field(0xFD08001CU, 0x00000018U, 3U, 0U);
+    ddr_prog_field(0xFD08142CU, 0x00000030U, 4U, 0U);
+    ddr_prog_field(0xFD08146CU, 0x00000030U, 4U, 0U);
+    ddr_prog_field(0xFD0814ACU, 0x00000030U, 4U, 0U);
+    ddr_prog_field(0xFD0814ECU, 0x00000030U, 4U, 0U);
+    ddr_prog_field(0xFD08152CU, 0x00000030U, 4U, 0U);
+
+    ddr_write32(0xFD080200U, 0x800091C7U);
+    ddr_prog_field(0xFD080018U, 0x0003FFFFU, 0U, trefprd);
+
+    ddr_write32(0xFD080004U, 0x0000C001U);
+    if (ddr_poll(0xFD080030U, 0x80000C01U, 0x80000C01U) != 0)
+        return ZCU102_PS_DDR_ERR_TRAINING_TIMEOUT;
+
+    regval = ddr_read32(0xFD080030U);
+    if (ddr_training_failed(regval))
+        return ZCU102_PS_DDR_ERR_TRAINING;
+
+    ddr_write32(0xFD070180U, 0x01000040U);
+    ddr_write32(0xFD070060U, 0x00000000U);
+    ddr_prog_field(0xFD080014U, 0x00000040U, 6U, 0U);
+
+    return ZCU102_PS_DDR_OK;
+}
+
+int zcu102_ps_ddr_init(void)
+{
+    int status;
+
+    status = zcu102_init_dpll_and_ddr_clock();
+    if (status != ZCU102_PS_DDR_OK)
+        return status;
+
+    ddr_apply_table(zcu102_ddr_config,
+                    (uint32_t)(sizeof(zcu102_ddr_config) /
+                               sizeof(zcu102_ddr_config[0])));
+
+    status = zcu102_ddr_phy_bringup();
+    if (status != ZCU102_PS_DDR_OK)
+        return status;
+
+    ddr_apply_table(zcu102_ddr_qos,
+                    (uint32_t)(sizeof(zcu102_ddr_qos) /
+                               sizeof(zcu102_ddr_qos[0])));
+
+    return ZCU102_PS_DDR_OK;
+}

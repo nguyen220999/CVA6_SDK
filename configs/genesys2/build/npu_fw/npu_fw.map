@@ -1,0 +1,87 @@
+
+Discarded input sections
+
+ .text          0x0000000000000000        0x0 build/npu_fw/npu_fw_test.o
+ .data          0x0000000000000000        0x0 build/npu_fw/npu_fw_test.o
+ .bss           0x0000000000000000        0x0 build/npu_fw/npu_fw_test.o
+ .comment       0x0000000000000000       0x21 build/npu_fw/npu_fw_test.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 build/npu_fw/npu_fw_test.o
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+NPU_FW           0x0000000084000000 0x0000000000800000 xrw
+*default*        0x0000000000000000 0xffffffffffffffff
+
+Linker script and memory map
+
+                0x0000000084000000                . = ORIGIN (NPU_FW)
+
+.text           0x0000000084000000        0x4
+                0x0000000084000000                __image_start = .
+ *(.text.entry)
+ .text.entry    0x0000000084000000        0x4 build/npu_fw/npu_fw_test.o
+                0x0000000084000000                main
+ *(.text.startup .text.startup.*)
+ *(.text .text.*)
+
+.rodata
+ *(.srodata .srodata.*)
+ *(.rodata .rodata.*)
+
+.data
+ *(.sdata .sdata.*)
+ *(.data .data.*)
+
+.bss            0x0000000084000008        0x0
+                0x0000000084000008                __bss_start = .
+ *(.sbss .sbss.*)
+ *(.bss .bss.*)
+ *(COMMON)
+                0x0000000084000008                __bss_end = .
+                0x0000000084000010                . = ALIGN (0x10)
+                0x0000000084000010                __image_end = .
+
+/DISCARD/
+ *(.comment)
+ *(.note .note.*)
+ *(.eh_frame .eh_frame.*)
+                0x0000000000000001                ASSERT ((__image_end <= (ORIGIN (NPU_FW) + LENGTH (NPU_FW))), NPU firmware exceeds its 8 MiB memory region)
+LOAD build/npu_fw/npu_fw_test.o
+OUTPUT(build/npu_fw/npu_fw.elf elf64-littleriscv)
+
+.riscv.attributes
+                0x0000000000000000       0x2a
+ .riscv.attributes
+                0x0000000000000000       0x2a build/npu_fw/npu_fw_test.o
+
+.debug_info     0x0000000000000000       0x45
+ .debug_info    0x0000000000000000       0x45 build/npu_fw/npu_fw_test.o
+
+.debug_abbrev   0x0000000000000000       0x30
+ .debug_abbrev  0x0000000000000000       0x30 build/npu_fw/npu_fw_test.o
+
+.debug_aranges  0x0000000000000000       0x30
+ .debug_aranges
+                0x0000000000000000       0x30 build/npu_fw/npu_fw_test.o
+
+.debug_rnglists
+                0x0000000000000000       0x17
+ .debug_rnglists
+                0x0000000000000000       0x17 build/npu_fw/npu_fw_test.o
+
+.debug_line     0x0000000000000000       0x5a
+ .debug_line    0x0000000000000000       0x5a build/npu_fw/npu_fw_test.o
+
+.debug_str      0x0000000000000000      0x129
+ .debug_str     0x0000000000000000      0x129 build/npu_fw/npu_fw_test.o
+
+.debug_line_str
+                0x0000000000000000       0x48
+ .debug_line_str
+                0x0000000000000000       0x48 build/npu_fw/npu_fw_test.o
+                                         0x9e (size before relaxing)
+
+.debug_frame    0x0000000000000000       0x28
+ .debug_frame   0x0000000000000000       0x28 build/npu_fw/npu_fw_test.o

@@ -1,0 +1,94 @@
+#!/bin/sh
+
+export PATH=/sbin:/usr/sbin:/bin:/usr/bin
+
+echo "DEBUG0: script started"
+echo "DEBUG0: script started" >/dev/console
+
+/bin/mount -t devtmpfs devtmpfs /dev
+
+# Từ đây, mọi output được chuyển vào kernel log.
+echo "<6>DEBUG1: devtmpfs mounted" >/dev/kmsg
+exec >/dev/kmsg 2>&1
+
+echo "DEBUG2: output redirected to kmsg"
+
+export PS4='+ line $LINENO: '
+set -x
+
+mount -t proc proc /proc
+mount -o remount,rw /
+
+mkdir -p /dev/pts /dev/shm
+mount -a
+
+mkdir -p /run/lock/subsys
+swapon -a
+
+ln -sf /proc/self/fd /dev/fd
+ln -sf /proc/self/fd/0 /dev/stdin
+ln -sf /proc/self/fd/1 /dev/stdout
+ln -sf /proc/self/fd/2 /dev/stderr
+
+hostname -F /etc/hostname
+
+echo "DEBUG3: starting rcS"
+sh -x /etc/init.d/rcS
+rc=$?
+
+set +x
+
+# Tắt rate-limit cho log từ /dev/kmsg
+echo on >/proc/sys/kernel/printk_devkmsg 2>/dev/null
+sleep 6
+
+echo "<6>DEBUG4: rcS returned $rc" >/dev/kmsg
+echo "<6>DEBUG5: interrupts before getty" >/dev/kmsg
+cat /proc/interrupts >/dev/kmsg
+
+echo "<6>DEBUG6: direct ttySIF0 TX test" >/dev/kmsg
+echo "=== DIRECT TTY TEST ===" >/dev/ttySIF0
+
+echo "<6>DEBUG7: starting getty with 10-second timeout" >/dev/kmsg
+/sbin/getty -L -t 10 115200 ttySIF0 vt100
+getty_rc=$?
+
+echo "<6>=== UART POLLING TEST START ===" >/dev/kmsg
+
+# Bảo đảm TX và RX được enable
+devmem 0x10020008 32 0x00000001 >/dev/null
+devmem 0x1002000c 32 0x00000001 >/dev/null
+
+# Gửi trực tiếp chuỗi \"UART\\r\\n\" qua TXDATA
+devmem 0x10020000 32 0x55 >/dev/null  # U
+devmem 0x10020000 32 0x41 >/dev/null  # A
+devmem 0x10020000 32 0x52 >/dev/null  # R
+devmem 0x10020000 32 0x54 >/dev/null  # T
+devmem 0x10020000 32 0x0d >/dev/null
+devmem 0x10020000 32 0x0a >/dev/null
+
+echo "<6>Press keys during UART polling test" >/dev/kmsg
+
+i=0
+while [ "$i" -lt 600 ]; do
+    value=$(devmem 0x10020004 32)
+
+    # Bit 31 = 1 nghĩa là RX FIFO rỗng
+    if [ $((value & 0x80000000)) -eq 0 ]; then
+        byte=$((value & 0xff))
+        printf '<6>UART POLL RX: 0x%02x\n' "$byte" >/dev/kmsg
+    fi
+
+    usleep 100000
+    i=$((i + 1))
+done
+
+echo "<6>=== UART POLLING TEST END ===" >/dev/kmsg
+
+sleep 6
+echo "<6>DEBUG8: getty returned $getty_rc" >/dev/kmsg
+cat /proc/interrupts >/dev/kmsg
+
+while true; do
+    sleep 60
+done

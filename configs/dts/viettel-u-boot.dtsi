@@ -1,0 +1,54 @@
+// SPDX-License-Identifier: GPL-2.0 OR MIT
+/*
+ * Copyright (C) 2026 Vietel Semiconductor Center
+ * Author: Tran Hoang Nguyen <nguyenth@viettel.com.vn>
+*/
+
+&L14 {
+	/* Hart 1 is owned by the NPU firmware, not OpenSBI/Linux. */
+	bootph-all;
+	status = "disabled";
+};
+
+&L15 {
+	bootph-all;
+};
+
+&L26 {
+	compatible = "testchipip,boot-address-reg";
+	bootph-all;
+};
+
+&L32 {
+	compatible = "testchipip,tile-reset-ctrl";
+	#reset-cells = <1>;
+	bootph-all;
+};
+
+/ {
+	npu-handoff {
+		compatible = "viettel,cva6-npu-handoff";
+		cpu = <&L14>;
+		boot-address-reg = <&L26>;
+		resets = <&L32 1>;
+		clint = <&L15>;
+		bootph-all;
+		status = "okay";
+	};
+};
+
+/*
+/ {
+	soc {
+		memory-controller@15700000 {
+			clock-frequency = <2133>; /* FIXME: delete property and implement CCF */
+		};
+	};
+};
+
+&syscrg {
+	assigned-clock-rates = <0>; /* FIXME: delete property and implement cpufreq */
+};
+*/
+
+#include "viettel-binman.dtsi"

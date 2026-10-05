@@ -1,0 +1,134 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: CVA6 SDK Debug <debug@local>
+Date: Wed, 16 Sep 2026 00:00:00 +0700
+Subject: [PATCH] serial: sifive: add temporary polling fallback
+
+The Chipyard CVA6 UART can transmit and receive through direct MMIO
+polling, but its PLIC interrupt counter remains at zero. Add a temporary
+10 ms timer fallback so ttySIF0 and getty can be tested independently of
+the broken IRQ path.
+
+Polling is enabled by default for this diagnostic patch. It can be disabled
+with sifive.force_polling=0 on the kernel command line.
+
+This is a debug workaround, not the final PLIC/DT fix.
+
+Signed-off-by: CVA6 SDK Debug <debug@local>
+---
+diff --git a/drivers/tty/serial/sifive.c b/drivers/tty/serial/sifive.c
+--- a/drivers/tty/serial/sifive.c
++++ b/drivers/tty/serial/sifive.c
+@@ -34,6 +34,7 @@
+ #include <linux/init.h>
+ #include <linux/io.h>
+ #include <linux/irq.h>
++#include <linux/jiffies.h>
+ #include <linux/module.h>
+ #include <linux/of.h>
+ #include <linux/of_irq.h>
+@@ -43,6 +44,7 @@
+ #include <linux/slab.h>
+ #include <linux/tty.h>
+ #include <linux/tty_flip.h>
++#include <linux/timer.h>
+ 
+ /*
+  * Register offsets
+@@ -113,6 +115,13 @@
+  */
+ #define SIFIVE_DEFAULT_BAUD_RATE		115200
+ 
++#define SIFIVE_SERIAL_POLL_INTERVAL_MS	10
++
++static bool force_polling = true;
++module_param_named(force_polling, force_polling, bool, 0644);
++MODULE_PARM_DESC(force_polling,
++		 "use timer polling instead of relying only on the UART interrupt");
++
+ /* SIFIVE_SERIAL_NAME: our driver's name that we pass to the operating system */
+ #define SIFIVE_SERIAL_NAME			"sifive-serial"
+ 
+@@ -153,6 +162,8 @@
+ 	struct clk		*clk;
+ 	struct notifier_block	clk_notifier;
+ 	bool			console_line_ended;
++	struct timer_list	poll_timer;
++	bool			poll_active;
+ };
+ 
+ /*
+@@ -519,6 +530,25 @@
+ 	__ssp_enable_txwm(ssp);
+ }
+ 
++static void sifive_serial_poll(struct timer_list *timer)
++{
++	struct sifive_serial_port *ssp =
++		timer_container_of(ssp, timer, poll_timer);
++
++	if (!READ_ONCE(ssp->poll_active))
++		return;
++
++	uart_port_lock(&ssp->port);
++	__ssp_receive_chars(ssp);
++	if (ssp->ier & SIFIVE_SERIAL_IE_TXWM_MASK)
++		__ssp_transmit_chars(ssp);
++	uart_unlock_and_check_sysrq(&ssp->port);
++
++	if (READ_ONCE(ssp->poll_active))
++		mod_timer(&ssp->poll_timer,
++			  jiffies + msecs_to_jiffies(SIFIVE_SERIAL_POLL_INTERVAL_MS));
++}
++
+ static irqreturn_t sifive_serial_irq(int irq, void *dev_id)
+ {
+ 	struct sifive_serial_port *ssp = dev_id;
+@@ -571,6 +601,12 @@
+ 	__ssp_enable_rxwm(ssp);
+ 	uart_port_unlock_irqrestore(&ssp->port, flags);
+ 
++	if (force_polling) {
++		WRITE_ONCE(ssp->poll_active, true);
++		mod_timer(&ssp->poll_timer,
++			  jiffies + msecs_to_jiffies(SIFIVE_SERIAL_POLL_INTERVAL_MS));
++	}
++
+ 	return 0;
+ }
+ 
+@@ -579,6 +615,11 @@
+ 	struct sifive_serial_port *ssp = port_to_sifive_serial_port(port);
+ 	unsigned long flags;
+ 
++	if (force_polling) {
++		WRITE_ONCE(ssp->poll_active, false);
++		timer_delete_sync(&ssp->poll_timer);
++	}
++
+ 	uart_port_lock_irqsave(&ssp->port, &flags);
+ 	__ssp_disable_rxwm(ssp);
+ 	__ssp_disable_txwm(ssp);
+@@ -1022,6 +1063,11 @@
+ 	ssp->clk = clk;
+ 	ssp->clk_notifier.notifier_call = sifive_serial_clk_notifier;
+ 
++	timer_setup(&ssp->poll_timer, sifive_serial_poll, 0);
++	if (force_polling)
++		dev_warn(&pdev->dev,
++			 "temporary UART timer polling fallback is enabled\n");
++
+ 	r = clk_notifier_register(ssp->clk, &ssp->clk_notifier);
+ 	if (r) {
+ 		dev_err(&pdev->dev, "could not register clock notifier: %d\n",
+@@ -1076,6 +1122,9 @@
+ {
+ 	struct sifive_serial_port *ssp = platform_get_drvdata(dev);
+ 
++	WRITE_ONCE(ssp->poll_active, false);
++	timer_shutdown_sync(&ssp->poll_timer);
++
+ 	__ssp_remove_console_port(ssp);
+ 	uart_remove_one_port(&sifive_serial_uart_driver, &ssp->port);
+ 	free_irq(ssp->port.irq, ssp);
+-- 
+2.43.0

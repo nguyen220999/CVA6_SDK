@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2026-08-17T00:00:00.000Z" agent="Codex" version="24.7.17" type="device">
+  <diagram id="fsbl-r5-flow" name="FSBL R5 Flow">
+    <mxGraphModel dx="2600" dy="1800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2600" pageHeight="1800" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- Title and project warning -->
+        <mxCell id="title" value="&lt;b&gt;LUỒNG CHẠY ZYNQMP FSBL TRÊN CORTEX-R5 — ZCU102&lt;/b&gt;" style="text;html=1;align=center;verticalAlign=middle;fontSize=24;fontColor=#1F2937;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="420" y="20" width="1700" height="45" as="geometry"/>
+        </mxCell>
+        <mxCell id="warning" value="&lt;b&gt;Lưu ý:&lt;/b&gt; project hiện tại là standalone_psu_cortexa53_0 / -DARMA53_64. Sơ đồ này mô tả luồng khi tạo domain psu_cortexr5_0 và build với -DARMR5." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF2CC;strokeColor=#D6B656;fontColor=#7A4E00;fontSize=13;align=center;verticalAlign=middle;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry x="500" y="75" width="1540" height="55" as="geometry"/>
+        </mxCell>
+
+        <!-- Stage backgrounds -->
+        <mxCell id="boot_bg" value="&lt;b&gt;BOOTROM + BSP STARTUP&lt;/b&gt;" style="swimlane;html=1;startSize=38;rounded=1;arcSize=8;fillColor=#F5F5F5;strokeColor=#666666;fontColor=#333333;fontSize=15;swimlaneFillColor=#FAFAFA;" vertex="1" parent="1">
+          <mxGeometry x="30" y="170" width="270" height="850" as="geometry"/>
+        </mxCell>
+        <mxCell id="stage1_bg" value="&lt;b&gt;STAGE 1 — INITIALIZATION&lt;/b&gt;" style="swimlane;html=1;startSize=38;rounded=1;arcSize=8;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontColor=#1F4E79;fontSize=15;swimlaneFillColor=#F4F8FD;" vertex="1" parent="1">
+          <mxGeometry x="330" y="170" width="500" height="850" as="geometry"/>
+        </mxCell>
+        <mxCell id="stage2_bg" value="&lt;b&gt;STAGE 2 — BOOT DEVICE + IMAGE HEADER&lt;/b&gt;" style="swimlane;html=1;startSize=38;rounded=1;arcSize=8;fillColor=#E1D5E7;strokeColor=#9673A6;fontColor=#5D3A69;fontSize=15;swimlaneFillColor=#FAF7FB;" vertex="1" parent="1">
+          <mxGeometry x="860" y="170" width="450" height="850" as="geometry"/>
+        </mxCell>
+        <mxCell id="stage3_bg" value="&lt;b&gt;STAGE 3 — LOAD PARTITIONS&lt;/b&gt;" style="swimlane;html=1;startSize=38;rounded=1;arcSize=8;fillColor=#D5E8D4;strokeColor=#82B366;fontColor=#2E6B32;fontSize=15;swimlaneFillColor=#F5FAF4;" vertex="1" parent="1">
+          <mxGeometry x="1340" y="170" width="560" height="1080" as="geometry"/>
+        </mxCell>
+        <mxCell id="stage4_bg" value="&lt;b&gt;STAGE 4 — HANDOFF / EXIT&lt;/b&gt;" style="swimlane;html=1;startSize=38;rounded=1;arcSize=8;fillColor=#FFE6CC;strokeColor=#D79B00;fontColor=#8A4D00;fontSize=15;swimlaneFillColor=#FFF9F1;" vertex="1" parent="1">
+          <mxGeometry x="1930" y="170" width="620" height="1080" as="geometry"/>
+        </mxCell>
+
+        <!-- BootROM and startup -->
+        <mxCell id="reset" value="Power-on / Reset" style="ellipse;whiteSpace=wrap;html=1;fillColor=#E5E7EB;strokeColor=#4B5563;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="75" y="230" width="180" height="65" as="geometry"/>
+        </mxCell>
+        <mxCell id="bootrom" value="&lt;b&gt;ZynqMP BootROM&lt;/b&gt;&lt;br&gt;Đọc Boot Header&lt;br&gt;Nạp FSBL vào OCM" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#666666;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="60" y="345" width="210" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="startup" value="&lt;b&gt;_vector_table / BSP startup&lt;/b&gt;&lt;br&gt;Stack, .data, .bss&lt;br&gt;MPU/cache runtime" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#666666;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="60" y="500" width="210" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="main" value="&lt;b&gt;main()&lt;/b&gt;&lt;br&gt;FsblStage = STAGE1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D9EAD3;strokeColor=#6AA84F;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="75" y="660" width="180" height="75" as="geometry"/>
+        </mxCell>
+        <mxCell id="link_note" value="Linker entry hiện có:&lt;br&gt;&lt;b&gt;ENTRY(_vector_table)&lt;/b&gt;&lt;br&gt;FSBL đặt trong OCM 0xFFFC0000" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#FFF2CC;strokeColor=#D6B656;fontSize=11;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="55" y="815" width="220" height="115" as="geometry"/>
+        </mxCell>
+
+        <!-- Stage 1 -->
+        <mxCell id="s1" value="&lt;b&gt;XFsbl_Initialize()&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="455" y="225" width="250" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="reset_reason" value="Đọc ResetReason&lt;br&gt;Reset AES/SHA" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#6C8EBF;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="455" y="320" width="250" height="65" as="geometry"/>
+        </mxCell>
+        <mxCell id="system_init" value="&lt;b&gt;XFsbl_SystemInit()&lt;/b&gt;&lt;br&gt;HookPsuInit() → psu_init()&lt;br&gt;Clock, PLL, MIO, DDR, peripherals" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#6C8EBF;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="425" y="420" width="310" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="processor_init" value="&lt;b&gt;XFsbl_ProcessorInit()&lt;/b&gt;&lt;br&gt;Đọc MPIDR + RPU_GLBL_CNTL" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFF2CC;strokeColor=#D6B656;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="440" y="545" width="280" height="115" as="geometry"/>
+        </mxCell>
+        <mxCell id="split" value="Split mode&lt;br&gt;&lt;b&gt;ProcessorID = R5_0&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="350" y="700" width="200" height="65" as="geometry"/>
+        </mxCell>
+        <mxCell id="lockstep" value="Lockstep mode&lt;br&gt;&lt;b&gt;ProcessorID = R5_L&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="610" y="700" width="200" height="65" as="geometry"/>
+        </mxCell>
+        <mxCell id="r5_vectors" value="Ghi vector bảo vệ tại 0x0–0x1F&lt;br&gt;Flush D-cache&lt;br&gt;Đăng ký exception handlers" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#6C8EBF;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="445" y="805" width="270" height="85" as="geometry"/>
+        </mxCell>
+        <mxCell id="ecc_board" value="TCM ECC (bỏ qua 32 byte vector)&lt;br&gt;DDR ECC + BoardInit + ResetValidation" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#6C8EBF;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="420" y="925" width="320" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- Stage 2 -->
+        <mxCell id="s2" value="&lt;b&gt;XFsbl_BootDeviceInitAndValidate()&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="925" y="225" width="320" height="65" as="geometry"/>
+        </mxCell>
+        <mxCell id="boot_mode" value="Đọc&lt;br&gt;BOOT_MODE_USER" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFF2CC;strokeColor=#D6B656;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="975" y="330" width="220" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="device_init" value="QSPI / NAND / SD / eMMC / USB&lt;br&gt;&lt;b&gt;Init WDT + CSU DMA + DeviceOps&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#9673A6;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="920" y="495" width="330" height="85" as="geometry"/>
+        </mxCell>
+        <mxCell id="validate_header" value="&lt;b&gt;XFsbl_ValidateHeader()&lt;/b&gt;&lt;br&gt;Đọc Boot Header&lt;br&gt;Multiboot offset + attributes" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#9673A6;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="935" y="625" width="300" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="read_ih" value="Đọc/validate Image Header Table&lt;br&gt;và Partition Headers&lt;br&gt;&lt;b&gt;PartitionNum = 1&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#9673A6;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="925" y="765" width="320" height="95" as="geometry"/>
+        </mxCell>
+        <mxCell id="jtag" value="JTAG mode&lt;br&gt;Không load partition" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8CECC;strokeColor=#B85450;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1110" y="910" width="170" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- Stage 3 -->
+        <mxCell id="s3" value="&lt;b&gt;XFsbl_PartitionLoad(PartitionNum)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82B366;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1450" y="225" width="340" height="65" as="geometry"/>
+        </mxCell>
+        <mxCell id="ph_validate" value="PartitionHeaderValidation&lt;br&gt;Checksum + owner + attributes&lt;br&gt;CPU / device / memory address" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#82B366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1460" y="330" width="320" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="owner" value="Owner = FSBL?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFF2CC;strokeColor=#D6B656;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1510" y="465" width="220" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="skip" value="Bỏ qua partition" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#666666;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1365" y="600" width="170" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="dest_mem" value="&lt;b&gt;PartitionCopy()&lt;/b&gt;&lt;br&gt;Xác định destination CPU/device&lt;br&gt;Đổi địa chỉ TCM low → high alias&lt;br&gt;Power-up memory + TCM ECC" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#82B366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1570" y="600" width="300" height="105" as="geometry"/>
+        </mxCell>
+        <mxCell id="overlap" value="Load đè vector R5&lt;br&gt;tại 0x0–0x1F?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFF2CC;strokeColor=#D6B656;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1500" y="750" width="240" height="115" as="geometry"/>
+        </mxCell>
+        <mxCell id="vector_guard" value="&lt;b&gt;LOVEC/HIVEC guard&lt;/b&gt;&lt;br&gt;Backup HIGHVEC&lt;br&gt;Ghi vector tạm + chuyển sang HIGHVEC&lt;br&gt;Giữ riêng 32 byte vector của app" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1645" y="900" width="225" height="115" as="geometry"/>
+        </mxCell>
+        <mxCell id="copy" value="DeviceOps.DeviceCopy()&lt;br&gt;Flash → TCM / OCM / DDR / PL" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#82B366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1370" y="925" width="230" height="75" as="geometry"/>
+        </mxCell>
+        <mxCell id="partition_validation" value="PartitionValidation()&lt;br&gt;Checksum / authentication / PL config&lt;br&gt;Lưu HandoffValues[]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#82B366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1450" y="1055" width="340" height="85" as="geometry"/>
+        </mxCell>
+        <mxCell id="more" value="Còn partition?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFF2CC;strokeColor=#D6B656;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1515" y="1165" width="210" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- Stage 4 -->
+        <mxCell id="s4" value="&lt;b&gt;XFsbl_Handoff()&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D79B00;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="2105" y="225" width="270" height="65" as="geometry"/>
+        </mxCell>
+        <mxCell id="handoff_prep" value="Restore SD card-detect register&lt;br&gt;Disable D-cache&lt;br&gt;PM init + protection config&lt;br&gt;HookBeforeHandoff()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#D79B00;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="2070" y="335" width="340" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="cpu_dest" value="Destination CPU?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFF2CC;strokeColor=#D6B656;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="2130" y="485" width="220" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="other_cpu" value="&lt;b&gt;CPU khác&lt;/b&gt;&lt;br&gt;Power-up island&lt;br&gt;Đặt reset vector&lt;br&gt;Release reset / HALT" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1970" y="650" width="240" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="running_r5" value="&lt;b&gt;R5 đang chạy FSBL&lt;/b&gt;&lt;br&gt;Ghi nhớ application entry address&lt;br&gt;Không reset chính R5" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82B366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="2260" y="650" width="250" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="restore_vec" value="Khôi phục 32 byte vector application&lt;br&gt;về LOWVEC nếu đã backup" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="2255" y="805" width="260" height="75" as="geometry"/>
+        </mxCell>
+        <mxCell id="complete" value="Đánh dấu XFSBL_COMPLETED&lt;br&gt;Stop WDT" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#D79B00;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="2265" y="930" width="240" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="handoff_exit" value="&lt;b&gt;XFsbl_HandoffExit(entry,&lt;br&gt;XFSBL_HANDOFFEXIT_32)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D79B00;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="2255" y="1045" width="260" height="75" as="geometry"/>
+        </mxCell>
+        <mxCell id="asm_exit" value="XFsbl_Exit() assembly&lt;br&gt;Invalidate I-cache / predictor&lt;br&gt;Disable I/D cache + MPU" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8CECC;strokeColor=#B85450;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="2005" y="1050" width="215" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="app" value="&lt;b&gt;bx entry_address&lt;/b&gt;&lt;br&gt;Ứng dụng R5 bắt đầu" style="ellipse;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82B366;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="2015" y="1165" width="205" height="65" as="geometry"/>
+        </mxCell>
+        <mxCell id="wfe" value="Không có app cho R5 hiện tại&lt;br&gt;&lt;b&gt;WFE loop&lt;/b&gt;" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#666666;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="2300" y="1165" width="190" height="65" as="geometry"/>
+        </mxCell>
+
+        <!-- Error/fallback lane -->
+        <mxCell id="error_bg" value="&lt;b&gt;ERROR / FALLBACK PATH&lt;/b&gt;" style="swimlane;html=1;startSize=38;rounded=1;arcSize=8;fillColor=#F8CECC;strokeColor=#B85450;fontColor=#8B1A1A;fontSize=15;swimlaneFillColor=#FFF7F7;" vertex="1" parent="1">
+          <mxGeometry x="330" y="1320" width="2220" height="290" as="geometry"/>
+        </mxCell>
+        <mxCell id="stage_err" value="&lt;b&gt;STAGE_ERR&lt;/b&gt;&lt;br&gt;XFsbl_ErrorLockDown(status)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8CECC;strokeColor=#B85450;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="510" y="1405" width="270" height="75" as="geometry"/>
+        </mxCell>
+        <mxCell id="fallback_check" value="Boot mode hỗ trợ&lt;br&gt;fallback?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFF2CC;strokeColor=#D6B656;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="930" y="1385" width="230" height="115" as="geometry"/>
+        </mxCell>
+        <mxCell id="fallback" value="HookBeforeFallback()&lt;br&gt;MULTIBOOT = MULTIBOOT + 1&lt;br&gt;System Soft Reset" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D79B00;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1320" y="1395" width="300" height="95" as="geometry"/>
+        </mxCell>
+        <mxCell id="fallback_wfe" value="Fallback không hỗ trợ&lt;br&gt;HandoffExit(0, NO_HANDOFFEXIT)&lt;br&gt;&lt;b&gt;WFE loop&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#666666;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1810" y="1395" width="300" height="95" as="geometry"/>
+        </mxCell>
+
+        <!-- Configuration note -->
+        <mxCell id="config_note" value="&lt;b&gt;Cấu hình source hiện tại:&lt;/b&gt; SD, Secure Boot, Early Handoff, USB và PERF đang bị exclude. Vì Early Handoff tắt, FSBL nạp hết partition ở Stage 3 rồi mới sang Stage 4." style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#FFF2CC;strokeColor=#D6B656;fontSize=12;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="50" y="1090" width="1210" height="130" as="geometry"/>
+        </mxCell>
+        <mxCell id="source_note" value="Nguồn đối chiếu: xfsbl_main.c, xfsbl_initialization.c, xfsbl_partition_load.c, xfsbl_handoff.c, xfsbl_exit.S, xfsbl_config.h" style="text;html=1;align=center;verticalAlign=middle;fontSize=11;fontColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="550" y="1640" width="1450" height="30" as="geometry"/>
+        </mxCell>
+
+        <!-- Main flow edges -->
+        <mxCell id="e_reset_bootrom" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#4B5563;" edge="1" parent="1" source="reset" target="bootrom"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e_bootrom_startup" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#4B5563;" edge="1" parent="1" source="bootrom" target="startup"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e_startup_main" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#4B5563;" edge="1" parent="1" source="startup" target="main"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e_main_s1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#6C8EBF;" edge="1" parent="1" source="main" target="s1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e_s1_reset" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#6C8EBF;" edge="1" parent="1" source="s1" target="reset_reason"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e_reset_system" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#6C8EBF;" edge="1" parent="1" source="reset_reason" target="system_init"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e_system_proc" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#6C8EBF;" edge="1" parent="1" source="system_init" target="processor_init"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e_proc_split" value="Split" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#9673A6;fontSize=11;" edge="1" parent="1" source="processor_init" target="split"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e_proc_lock" value="Lockstep" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#9673A6;fontSize=11;" edge="1" parent="1" source="processor_init" target="lockstep"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e_split_vec" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#6C8EBF;" edge="1" parent="1" source="split" target="r5_vectors"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e_lock_vec" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#6C8EBF;" edge="1" parent="1" source="lockstep" target="r5_vectors"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e_vec_ecc" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#6C8EBF;" edge="1" parent="1" source="r5_vectors" target="ecc_board"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e_ecc_s2" value="SUCCESS" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#9673A6;fontSize=11;" edge="1" parent="1" source="ecc_board" target="s2"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e_s2_mode" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#9673A6;" edge="1" parent="1" source="s2" target="boot_mode"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e_mode_dev" value="Device boot" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#9673A6;fontSize=11;" edge="1" parent="1" source="boot_mode" target="device_init"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e_dev_header" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#9673A6;" edge="1" parent="1" source="device_init" target="validate_header"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e_header_ih" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#9673A6;" edge="1" parent="1" source="validate_header" target="read_ih"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e_mode_jtag" value="JTAG" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#B85450;fontSize=11;" edge="1" parent="1" source="boot_mode" target="jtag"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e_ih_s3" value="SUCCESS" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#82B366;fontSize=11;" edge="1" parent="1" source="read_ih" target="s3"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e_s3_ph" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#82B366;" edge="1" parent="1" source="s3" target="ph_validate"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e_ph_owner" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#82B366;" edge="1" parent="1" source="ph_validate" target="owner"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e_owner_skip" value="Không" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#666666;fontSize=11;" edge="1" parent="1" source="owner" target="skip"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e_owner_dest" value="Có" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#82B366;fontSize=11;" edge="1" parent="1" source="owner" target="dest_mem"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e_dest_overlap" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#82B366;" edge="1" parent="1" source="dest_mem" target="overlap"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e_overlap_guard" value="Có" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#9673A6;fontSize=11;" edge="1" parent="1" source="overlap" target="vector_guard"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e_overlap_copy" value="Không" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#82B366;fontSize=11;" edge="1" parent="1" source="overlap" target="copy"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e_guard_copy" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#9673A6;" edge="1" parent="1" source="vector_guard" target="copy"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e_copy_validation" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#82B366;" edge="1" parent="1" source="copy" target="partition_validation"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e_skip_more" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#666666;" edge="1" parent="1" source="skip" target="more"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e_validation_more" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#82B366;" edge="1" parent="1" source="partition_validation" target="more"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e_more_loop" value="Có: PartitionNum++" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#82B366;fontSize=11;exitX=0;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="more" target="s3"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1360" y="1200"/><mxPoint x="1360" y="258"/></Array></mxGeometry></mxCell>
+        <mxCell id="e_more_s4" value="Không: all loaded" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#D79B00;fontSize=11;" edge="1" parent="1" source="more" target="s4"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e_jtag_s4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#B85450;dashed=1;" edge="1" parent="1" source="jtag" target="s4"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1295" y="945"/><mxPoint x="1295" y="150"/><mxPoint x="2240" y="150"/></Array></mxGeometry></mxCell>
+        <mxCell id="e_s4_prep" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#D79B00;" edge="1" parent="1" source="s4" target="handoff_prep"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e_prep_cpu" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#D79B00;" edge="1" parent="1" source="handoff_prep" target="cpu_dest"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e_cpu_other" value="CPU khác" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#6C8EBF;fontSize=11;" edge="1" parent="1" source="cpu_dest" target="other_cpu"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e_cpu_running" value="Running R5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#82B366;fontSize=11;" edge="1" parent="1" source="cpu_dest" target="running_r5"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e_other_loop" value="CPU kế tiếp" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#6C8EBF;fontSize=11;exitX=0;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="other_cpu" target="cpu_dest"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1945" y="700"/><mxPoint x="1945" y="540"/></Array></mxGeometry></mxCell>
+        <mxCell id="e_running_restore" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#82B366;" edge="1" parent="1" source="running_r5" target="restore_vec"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e_restore_complete" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#D79B00;" edge="1" parent="1" source="restore_vec" target="complete"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e_complete_exit" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#D79B00;" edge="1" parent="1" source="complete" target="handoff_exit"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e_exit_asm" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#B85450;" edge="1" parent="1" source="handoff_exit" target="asm_exit"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e_asm_app" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#82B366;" edge="1" parent="1" source="asm_exit" target="app"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e_cpu_wfe" value="Không có entry" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#666666;fontSize=11;dashed=1;" edge="1" parent="1" source="cpu_dest" target="wfe"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="2535" y="540"/><mxPoint x="2535" y="1198"/></Array></mxGeometry></mxCell>
+
+        <!-- Error/fallback edges -->
+        <mxCell id="e_s1_err" value="ERROR" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#B85450;fontSize=10;dashed=1;" edge="1" parent="1" source="ecc_board" target="stage_err"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e_s2_err" value="ERROR" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#B85450;fontSize=10;dashed=1;" edge="1" parent="1" source="validate_header" target="stage_err"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e_s3_err" value="ERROR" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#B85450;fontSize=10;dashed=1;" edge="1" parent="1" source="partition_validation" target="stage_err"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e_s4_err" value="ERROR" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#B85450;fontSize=10;dashed=1;" edge="1" parent="1" source="handoff_prep" target="stage_err"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e_err_check" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#B85450;" edge="1" parent="1" source="stage_err" target="fallback_check"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e_check_fallback" value="Có" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#D79B00;fontSize=11;" edge="1" parent="1" source="fallback_check" target="fallback"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e_check_wfe" value="Không" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#666666;fontSize=11;" edge="1" parent="1" source="fallback_check" target="fallback_wfe"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

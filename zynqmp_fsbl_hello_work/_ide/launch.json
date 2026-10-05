@@ -1,0 +1,63 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "tcf-debug",
+      "request": "launch",
+      "name": "zynqmp_fsbl_hello_work_app_hw_1",
+      "debugType": "baremetal-zu",
+      "attachToRunningTargetOptions": {
+        "targetSetupMode": "standalone",
+        "executeScript": true,
+        "scriptPath": ""
+      },
+      "autoAttachProcessChildren": false,
+      "target": {
+        "targetConnectionId": "Local",
+        "peersIniPath": "../../_ide/.peers.ini",
+        "context": "ZUPlus"
+      },
+      "pathMap": [],
+      "targetSetup": {
+        "resetSystem": true,
+        "programDevice": true,
+        "enableRPUSplitMode": false,
+        "resetAPU": false,
+        "resetRPU": false,
+        "bitstreamFile": "",
+        "zuInitialization": {
+          "isFsbl": true,
+          "usingFSBL": {
+            "initWithFSBL": true,
+            "fsblFile": "/data/workspaces/nguyenth/Downloads/platform_fsbl_hello_work/platform_fsbl_hello_work/export/platform_fsbl_hello_work/sw/boot/fsbl.elf",
+            "fsblExitSymbol": "XFsbl_Exit"
+          },
+          "usingPsuInit": {
+            "runPsuInit": true,
+            "plPowerup": false,
+            "psuInitTclFile": "${workspaceFolder}/zynqmp_fsbl_hello_work/_ide/psinit/psu_init.tcl"
+          }
+        },
+        "zuTraceOptions": {
+          "isSelected": false,
+          "scratchAddress": "0x60000",
+          "scratchSize": "0x60000",
+          "traceOutputPath": ""
+        },
+        "downloadElf": [
+          {
+            "core": "psu_cortexa53_0",
+            "resetProcessor": true,
+            "elfFile": "${workspaceFolder}/zynqmp_fsbl_hello_work/build/zynqmp_fsbl_hello_work.elf",
+            "stopAtEntry": false
+          }
+        ],
+        "crossTriggerBreakpoints": {
+          "isSelected": false,
+          "breakpoints": []
+        }
+      },
+      "internalConsoleOptions": "openOnSessionStart"
+    }
+  ]
+}
